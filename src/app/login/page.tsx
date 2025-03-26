@@ -18,59 +18,73 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      {/* Logo on Mobile & Desktop */}
-      <div className="absolute top-4 left-4 sm:top-6 sm:left-6">
-        <Image src="/logo_main.png" alt="Logo" width={200} height={50} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      {/* Logo */}
+      <div className="absolute top-6 left-6 sm:top-8 sm:left-8">
+        <Image 
+          src="/logo_main.png" 
+          alt="Logo" 
+          width={200} 
+          height={50} 
+          className="hover:scale-105 transition-transform duration-300"
+        />
       </div>
 
-      {/* Login Form */}
-      <div className="m-auto w-full max-w-lg sm:max-w-md bg-white p-6 sm:p-8 shadow-lg rounded-lg">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 text-center">
-          Log In
-        </h2>
-
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          <div>
-            <label className="block text-gray-600 text-sm font-medium">Username</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="Enter your username"
-              className="mt-1 w-full sm:max-w-md px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+      {/* Login Card */}
+      <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden">
+        <div className="p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-800">Welcome Back</h2>
+            <p className="text-gray-500 mt-2">Sign in to your account</p>
           </div>
 
-          <div>
-            <label className="block text-gray-600 text-sm font-medium">Password</label>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              className="mt-1 w-full sm:max-w-md px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Username</label>
+              <input
+                type="text"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter your username"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Enter your password"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300"
+            >
+              Sign In
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{" "}
+              <Link 
+                href="/request" 
+                className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              >
+                Request access
+              </Link>
+            </p>
           </div>
-
-          <button
-            type="submit"
-            className="w-full sm:max-w-md bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-300"
-          >
-            Login
-          </button>
-        </form>
-
-        <p className="text-center text-gray-600 text-sm mt-4">
-          Don’t have an account?{" "}
-          <Link href="/request" className="text-blue-500 hover:underline">
-            Request access
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   );
