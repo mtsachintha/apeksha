@@ -355,10 +355,10 @@ const DetailsPage = () => {
 
 {activeSubSection === "diagnosis" && (
     <div className="col-span-3 border p-4 rounded">
-    <h3 className="text-lg font-semibold mb-2 text-gray-500">Demographics</h3>
+    <h3 className="text-lg font-semibold mb-2 text-gray-500">Diagnosis</h3>
     <div className="grid grid-cols-2 gap-4">
       <label className="block">
-        <span className="text-gray-500">Title</span>
+        <span className="text-gray-500">Cancer Type</span>
         <select className="w-full border p-2 rounded">
           <option>Mrs</option>
           <option>Mr</option>
@@ -366,59 +366,74 @@ const DetailsPage = () => {
         </select>
       </label>
       <label className="block">
-        <span className="text-gray-500">First Name</span>
+        <span className="text-gray-500">Sub Category</span>
         <input type="text" value="Megan" className="w-full border p-2 rounded" readOnly />
       </label>
       <label className="block">
-        <span className="text-gray-500">Last Name</span>
-        <input type="text" value="Harker" className="w-full border p-2 rounded" readOnly />
-      </label>
-      <label className="block">
-        <span className="text-gray-500">Date of Birth</span>
-        <input type="date" value="1988-12-29" className="w-full border p-2 rounded" readOnly />
-      </label>
-      <label className="block">
-        <span className="text-gray-500">Gender</span>
+        <span className="text-gray-500">Stage</span>
         <select className="w-full border p-2 rounded">
           <option>Male</option>
           <option>Female</option>
         </select>
       </label>
       <label className="block">
-        <span className="text-gray-500">Contact No</span>
-        <input type="text" value="The Sun" className="w-full border p-2 rounded" readOnly />
-      </label>
-      <label className="block col-span-2">
-        <span className="text-gray-500">Address 2</span>
-        <textarea 
-          placeholder="Enter Address 2" 
-          className="w-full border p-2 rounded" 
-          rows={3} 
-        ></textarea>
+        <span className="text-gray-500">Date Assesed</span>
+        <input type="date" value="1988-12-29" className="w-full border p-2 rounded" readOnly />
       </label>
     </div>
 
-    {/* Other Section (Moved into Demographics) */}
     <div className="border p-4 rounded mt-4">
-      <h3 className="text-lg font-semibold mb-2 text-gray-500">Notes</h3>
+      <h3 className="text-lg font-semibold mb-2 text-gray-500">Initial Physical Examination</h3>
       <div className="grid grid-cols-1 gap-4">
         <label className="block">
+        <span className="text-gray-500">Findings</span>
           <textarea 
             placeholder="Enter Notes" 
             className="w-full border p-2 rounded mt-2" 
             rows={3}  
           ></textarea>
         </label>
+        <label className="block">
+        <span className="text-gray-500">Suspicious Lumps</span>
+          <textarea 
+            placeholder="Enter Notes" 
+            className="w-full border p-2 rounded mt-2" 
+            rows={3}  
+          ></textarea>
+        </label>
+        <label className="block">
+        <span className="text-gray-500">Pain Assessment</span>
+          <textarea 
+            placeholder="Enter Notes" 
+            className="w-full border p-2 rounded mt-2" 
+            rows={3}  
+          ></textarea>
+        </label>        
+      </div>
+    </div>
+
+    <div className="border p-4 rounded mt-4">
+      <h3 className="text-lg font-semibold mb-2 text-gray-500">Referring Physician & Notes</h3>
+      <div className="grid grid-cols-1 gap-4">
+      <label className="block">
+        <span className="text-gray-500">Consulting Doctor</span>
+        <input type="text" value="Megan" className="w-full border p-2 rounded" readOnly />
+      </label>
+      <label className="block">
+        <span className="text-gray-500">Notes</span>
+          <textarea 
+            placeholder="Enter Notes" 
+            className="w-full border p-2 rounded mt-2" 
+            rows={3}  
+          ></textarea>
+        </label>  
       </div>
     </div>
   </div>
 )}
 
-</div>
-)}
-
 {/* Social Subsection - Empty for now */}
-{activeSubSection === "social" && (
+{activeSubSection === "investigations" && (
   <div className="col-span-3 border p-4 rounded">
   <h3 className="text-lg font-semibold mb-2 text-gray-500">Medical History</h3>
   <div className="grid grid-cols-2 gap-4">
@@ -495,10 +510,8 @@ Non Smoker
       </div>
     </div>
   </div>
-)}
-
-
-{activeSubSection === "background" && (
+)} 
+{activeSubSection === "observations" && (
 <div className="col-span-3 border p-4 rounded">
 <h3 className="text-lg font-semibold mb-2 text-gray-500">Past Medical Conditions:</h3>
 
@@ -548,8 +561,10 @@ Non Smoker
     <PlusCircle size={20} className="mr-2" /> Add More
   </button>
 </div> 
-)}      
-      </div>
+)}
+</div>
+)}   
+  </div>
   );
 };
 
