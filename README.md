@@ -74,5 +74,5 @@ This project is licensed under the **MIT License**.
 For inquiries or contributions, reach out to:  
 📧 **Email:** [mtscharuka@std.appsc.sab.ac.lk](mailto:mtscharuka@std.appsc.sab.ac.lk)  
 📧 **Email:** [tadrpchandrarathna@std.appsc.sab.ac.lk](mailto:tadrpchandrarathna@std.appsc.sab.ac.lk)
-🔗 **GitHub:** [yourusername](https://github.com/ravindu1015)  
-🔗 **GitHub:** [yourusername](https://github.com/mtscharuka)
+🔗 **GitHub:** [ravindu1015](https://github.com/ravindu1015)  
+🔗 **GitHub:** [mtscharuka](https://github.com/mtscharuka)
