@@ -1,23 +1,36 @@
 "use client";
 
 import React, { useState } from "react";
-import { PlusCircle, Trash } from "lucide-react";
+import { PlusCircle, Trash , Save} from "lucide-react";
 import { FaUserMd, FaChevronDown, FaArrowRight, FaCalendarAlt, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 import Image from "next/image";
 
 const DetailsPage = () => {
-  const [activeTab, setActiveTab] = useState("details");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [activeSubSection, setActiveSubSection] = useState("demographics");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [rows, setRows] = useState([{ disease: "", relationship: "" }]);
 
-  const addRow = () => {
-    setRows([...rows, { disease: "", relationship: "" }]);
-  };
 
-  const removeRow = (index: number) => {
-    setRows(rows.filter((_, i) => i !== index));
-  };
+// Family History
+  const [familyHistory, setFamilyHistory] = useState([{ condition: "", relation: "" }]);
+const addFamilyRecord = () => {
+  setFamilyHistory([...familyHistory, { condition: "", relation: "" }]);
+};
+const removeFamilyRecord = (index: number) => {
+  setFamilyHistory(familyHistory.filter((_, i) => i !== index));
+};
+
+//chronicIllnesses
+const [chronicIllnesses, setChronicIllnesses] = useState([""]);
+const addIllness = () => {
+  setChronicIllnesses([...chronicIllnesses, ""]);
+};
+const removeIllness = (index: number) => {
+  setChronicIllnesses(chronicIllnesses.filter((_, i) => i !== index));
+};
+const updateIllnesses = () => {
+  console.log("Updated illnesses:", chronicIllnesses);
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -97,11 +110,68 @@ const DetailsPage = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-4 md:p-6">
-        {activeTab === "dashboard" && (
-          <div className="bg-white rounded-lg shadow-sm p-6 text-center text-gray-500">
-            Dashboard content goes here
-          </div>
-        )}
+      {activeTab === "dashboard" && (
+  <div className="p-6">
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    {/* Patient Data */}
+    <div className="bg-white p-4 rounded-lg shadow text-gray-500">
+      <h2 className="font-semibold text-gray-700">Patient Data</h2>
+      <p><strong>Name:</strong> Lola Greenwood</p>
+      <p><strong>Patient ID:</strong> PID009384</p>
+      <p><strong>Blood Group:</strong> A+</p>
+      <p><strong>Phone:</strong> (808) 555-0111</p>
+      <p><strong>Email:</strong> nvt.isst.nute@gmail.com</p>
+    </div>
+
+    {/* Last Vitals */}
+    <div className="bg-white p-4 rounded-lg shadow text-gray-500">
+      <h2 className="font-semibold text-gray-700">Last Vitals</h2>
+      <p><strong>Weight:</strong> 77 kg</p>
+      <p><strong>Height:</strong> 170 cm</p>
+      <p><strong>Blood Pressure:</strong> 120/70</p>
+      <p><strong>Pulse:</strong> 60</p>
+    </div>
+
+    {/* Major Problems */}
+    <div className="bg-white p-4 rounded-lg shadow text-gray-500">
+      <h2 className="font-semibold text-gray-700">Primary Diagnosis</h2>
+      <p><strong>Gastritis:</strong> 2021-05-15</p>
+      <p><strong>Angina:</strong> 2021-05-10</p>
+      <p><strong>Headaches:</strong> 2021-03-10</p>
+    </div>
+  </div>
+
+  {/* Lab Results & Chronic Medication */}
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+    <div className="bg-white p-4 rounded-lg shadow text-gray-500">
+      <h2 className="font-semibold text-gray-700">Lab Results</h2>
+      <p><strong>WBC:</strong> 72 K/pl (5.7-16.10)</p>
+      <p><strong>NEU:</strong> 24.45 K/pl (3-11.5)</p>
+      <p><strong>LYM:</strong> 6 K/pl (5.7-16.7)</p>
+    </div>
+    <div className="bg-white p-4 rounded-lg shadow text-gray-500">
+      <h2 className="font-semibold text-gray-700">Chronic Medication</h2>
+      <p><strong>Aspirin:</strong> 2021-05-15</p>
+      <p><strong>Nuorfen:</strong> 2021-05-10</p>
+      <p><strong>Paracetamol:</strong> 2021-03-10</p>
+    </div>
+  </div>
+
+  {/* Last Visit */}
+  <div className="bg-white p-4 rounded-lg shadow mt-4 text-gray-500">
+    <h2 className="font-semibold text-gray-700">Last Observation</h2>
+    <p><strong>Reason:</strong> Candidiasis can be a pesky infection</p>
+    <p><strong>Diagnosis:</strong> Antifungals may cause side effects</p>
+    <p><strong>Medication:</strong> Paracetamol Strength, 10% Coverage</p>
+    <p><strong>Other:</strong> Vecectomy Sergary</p>
+  </div>
+
+  {/* Export Button */}
+  <div className="mt-4 text-right">
+    <button className="bg-blue-500 text-white px-4 py-2 rounded">Export</button>
+  </div>
+</div>
+)}
 
         {activeTab === "details" && (
           <div className="grid md:grid-cols-4 gap-6">
@@ -315,19 +385,57 @@ const DetailsPage = () => {
                     </div>
                     
                     <div className="mt-8 space-y-6">
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                          </svg>
-                          Chronic Illnesses
-                        </h4>
-                        <textarea 
-                          placeholder="Enter chronic illnesses" 
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                          rows={3}
-                        />
-                      </div>
+                    <div>
+  <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
+    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+    </svg>
+    Chronic Illnesses
+  </h4>
+
+  {chronicIllnesses.map((illness, index) => (
+    <div key={index} className="flex items-center space-x-2 mb-2">
+      <input
+        type="text"
+        placeholder="Enter chronic illness"
+        value={illness}
+        onChange={(e) => {
+          const newIllnesses = [...chronicIllnesses];
+          newIllnesses[index] = e.target.value;
+          setChronicIllnesses(newIllnesses);
+        }}
+        className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      />
+      {chronicIllnesses.length > 1 && (
+        <button
+          onClick={() => removeIllness(index)}
+          className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+        >
+          <Trash size={18} />
+        </button>
+      )}
+    </div>
+  ))}
+
+   {/* Buttons aligned to the right */}
+   <div className="flex justify-end space-x-2 mt-4">
+    <button
+      onClick={addIllness}
+      className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+    >
+      <PlusCircle size={20} className="mr-2" />
+      Add More
+    </button>
+
+    <button
+      onClick={updateIllnesses}
+      className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+    >
+      <Save size={20} className="mr-2" />
+      Update
+    </button>
+  </div>
+</div>
                       
                       <div>
                         <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
@@ -364,89 +472,83 @@ const DetailsPage = () => {
               {/* Family Background Section */}
               {activeSubSection === "background" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                      Family Background
-                    </h3>
-                    
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hereditary Disease</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Relationship</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {rows.map((row, index) => (
-                            <tr key={index}>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    Family Background
+                  </h3>
+              
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Hereditary Condition
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Relation
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {familyHistory.map((record, index) => (
+                          <tr key={index}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <input
+                                type="text"
+                                placeholder="E.g., Diabetes"
+                                value={record.condition}
+                                onChange={(e) => {
+                                  const newHistory = [...familyHistory];
+                                  newHistory[index].condition = e.target.value;
+                                  setFamilyHistory(newHistory);
+                                }}
+                                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex space-x-2">
                                 <input
                                   type="text"
-                                  placeholder="E.g., Diabetes"
-                                  value={row.disease}
+                                  placeholder="E.g., Father"
+                                  value={record.relation}
                                   onChange={(e) => {
-                                    const newRows = [...rows];
-                                    newRows[index].disease = e.target.value;
-                                    setRows(newRows);
+                                    const newHistory = [...familyHistory];
+                                    newHistory[index].relation = e.target.value;
+                                    setFamilyHistory(newHistory);
                                   }}
                                   className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="flex space-x-2">
-                                  <input
-                                    type="text"
-                                    placeholder="E.g., Father"
-                                    value={row.relationship}
-                                    onChange={(e) => {
-                                      const newRows = [...rows];
-                                      newRows[index].relationship = e.target.value;
-                                      setRows(newRows);
-                                    }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                  />
-                                  {rows.length > 1 && (
-                                    <button 
-                                      onClick={() => removeRow(index)}
-                                      className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                                    >
-                                      <Trash size={18} />
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                {index === rows.length - 1 && (
-                                  <button
-                                    onClick={addRow}
-                                    className="text-blue-600 hover:text-blue-900"
+                                {familyHistory.length > 1 && (
+                                  <button 
+                                    onClick={() => removeFamilyRecord(index)}
+                                    className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
                                   >
-                                    <PlusCircle size={20} className="inline mr-1" />
+                                    <Trash size={18} />
                                   </button>
                                 )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    
-                    <div className="mt-4">
-                      <button
-                        onClick={addRow}
-                        className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        <PlusCircle size={20} className="mr-2" />
-                        Add More
-                      </button>
-                    </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+              
+                  <div className="mt-4">
+                    <button
+                      onClick={addFamilyRecord}
+                      className="flex items-center text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      <PlusCircle size={20} className="mr-2" />
+                      Add More
+                    </button>
                   </div>
                 </div>
+              </div>
               )}
             </div>
           </div>
