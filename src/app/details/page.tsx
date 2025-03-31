@@ -987,7 +987,7 @@ const DetailsPage = () => {
 
                     <div className="space-y-6">
                       <div>
-                      <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                        <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                           </svg>
@@ -1040,7 +1040,7 @@ const DetailsPage = () => {
                       </div>
 
                       <div>
-                      <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                        <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
                           </svg>
@@ -1093,7 +1093,7 @@ const DetailsPage = () => {
                       </div>
 
                       <div>
-                      <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                        <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                           </svg>
@@ -1163,12 +1163,20 @@ const DetailsPage = () => {
               {activeSubSection === "vitalsigns" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Observations
-                    </h3>
+                  <div className="flex justify-between items-center mb-6">
+    <h3 className="text-l font-semibold text-gray-800 flex items-center gap-2">
+      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 3 0 016 0z" />
+      </svg>
+      Observations
+    </h3>
+    <select className="border border-gray-300 rounded px-3 py-1 text-gray-700">
+      <option>Select Date</option>
+      <option>2025-03-30</option>
+      <option>2025-03-29</option>
+      <option>2025-03-28</option>
+    </select>
+  </div>
 
                     <div className="space-y-6">
                       <div>
@@ -1204,6 +1212,26 @@ const DetailsPage = () => {
                             />
                           </div>
                         </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+                          <input
+                            type="text"
+                            placeholder="e.g., 120/80"
+                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
+                          <input
+                            type="text"
+                            placeholder="e.g., 120/80"
+                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+
                       </div>
 
                       <div>
