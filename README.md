@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+### **Patient Record-Keeping System**  
+*A Next.js & Tailwind CSS project for managing patient records in the Endoscopy Unit at Apeksha Hospital - Maharagama*  
 
-## Getting Started
+![Project Banner](https://via.placeholder.com/1200x400?text=Project+Banner)  
 
-First, run the development server:
+## 🚀 **About the Project**  
+This project is designed to provide a **secure and efficient** way to manage patient records, ensuring organized storage, retrieval, and updating of patient details. It streamlines medical processes and improves hospital efficiency.  
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🎯 **Features**  
+✅ Secure patient record management  
+✅ Role-based access control (Doctors & Patients)  
+✅ Searchable and filterable patient data  
+✅ Monthly condition updates  
+✅ Responsive and user-friendly interface  
+
+## 🛠 **Tech Stack**  
+- **Frontend:** Next.js, Tailwind CSS  
+- **Backend:** Next.js  
+- **Database:** mongo  
+- **Authentication:**  NextAuth.js  
+- **Version Control:** GitHub  
+
+## 📂 **Project Structure**  
+```
+📦 project-root  
+ ┣ 📂 public  
+ ┣ 📂 src  
+ ┃ ┣ 📂 components  
+ ┃ ┣ 📂 pages  
+ ┃ ┣ 📂 styles  
+ ┃ ┣ 📜 app.js  
+ ┃ ┗ 📜 index.js  
+ ┣ 📜 .gitignore  
+ ┣ 📜 package.json  
+ ┣ 📜 README.md  
+ ┗ 📜 tailwind.config.js  
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📌 **Getting Started**  
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 🔧 **Installation**  
+```bash
+git clone https://github.com/yourusername/your-repo.git
+cd your-repo
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### ▶ **Run the Project**  
+```bash
+npm run dev
+```
+The app will run at **http://localhost:3000/**  
 
-## Learn More
+## 🖌 **Styling with Tailwind CSS**  
+We use **Tailwind CSS** for styling to ensure a modern, responsive UI. Tailwind classes are applied directly within components to maintain consistency and flexibility.  
 
-To learn more about Next.js, take a look at the following resources:
+## 🔐 **Authentication & Security**  
+- **Role-Based Access:** Doctors have full access, while patients can only update post-treatment conditions.  
+- **Data Encryption:** Patient records are securely stored with encryption.  
+- **Authorization:** Firebase Auth or NextAuth.js is used for secure login.  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📌 **Contributing**  
+Want to contribute? Please follow these steps:  
+1. **Fork** the repository  
+2. **Create a new branch** (`feature-branch`)  
+3. **Commit your changes**  
+4. **Push to the branch**  
+5. **Open a pull request**  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📜 **License**  
+This project is licensed under the **MIT License**.  
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📞 **Contact**  
+For inquiries or contributions, reach out to:  
+📧 **Email:** [mtscharuka@std.appsc.sab.ac.lk](mailto:mtscharuka@std.appsc.sab.ac.lk)  
+📧 **Email:** [tadrpchandrarathna@std.appsc.sab.ac.lk](mailto:tadrpchandrarathna@std.appsc.sab.ac.lk)
+🔗 **GitHub:** [ravindu1015](https://github.com/ravindu1015)  
+🔗 **GitHub:** [mtscharuka](https://github.com/mtscharuka)
