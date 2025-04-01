@@ -24,6 +24,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/next": "^8.0.7",
     "@types/node": "^22.13.14",
     "@types/react": "^19",
