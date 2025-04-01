@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/utils/dbConnect";
-import User from "@/models/User";
+import dbConnect from "../../../utils/dbConnect";  // Adjust the relative path based on the file location
+import User from "../../../models/User";
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {
