@@ -134,41 +134,63 @@ const DetailsPage = () => {
     // Add your update logic here
   };
 
-  // Blood Tests
-  const [bloodTests, setBloodTests] = useState([""]);
-  const addBloodTest = () => {
-    setBloodTests([...bloodTests, ""]);
-  };
-  const removeBloodTest = (index: number) => {
-    setBloodTests(bloodTests.filter((_, i) => i !== index));
-  };
-  const updateBloodTests = () => {
-    // Add your update logic here
-  };
+// Blood Tests
+const [bloodTests, setBloodTests] = useState([{ name: "", result: "" }]);
 
-  // Imaging Studies
-  const [imagingStudies, setImagingStudies] = useState([""]);
-  const addImagingStudy = () => {
-    setImagingStudies([...imagingStudies, ""]);
-  };
-  const removeImagingStudy = (index: number) => {
-    setImagingStudies(imagingStudies.filter((_, i) => i !== index));
-  };
-  const updateImagingStudies = () => {
-    // Add your update logic here
-  };
+const addBloodTest = () => {
+  setBloodTests([...bloodTests, { name: "", result: "" }]);
+};
 
-  // Other Investigations
-  const [otherInvestigations, setOtherInvestigations] = useState([""]);
-  const addInvestigation = () => {
-    setOtherInvestigations([...otherInvestigations, ""]);
-  };
-  const removeInvestigation = (index: number) => {
-    setOtherInvestigations(otherInvestigations.filter((_, i) => i !== index));
-  };
-  const updateInvestigations = () => {
-    // Add your update logic here
-  };
+const removeBloodTest = (index: number) => {
+  setBloodTests(bloodTests.filter((_, i) => i !== index));
+};
+
+const updateBloodTest = (index: number, field: "name" | "result", value: string) => {
+  setBloodTests(
+    bloodTests.map((test, i) => (i === index ? { ...test, [field]: value } : test))
+  );
+};
+
+// Imaging Studies
+const [imagingStudies, setImagingStudies] = useState([{ name: "", result: "" }]);
+
+const addImagingStudy = () => {
+  setImagingStudies([...imagingStudies, { name: "", result: "" }]);
+};
+
+const removeImagingStudy = (index: number) => {
+  setImagingStudies(imagingStudies.filter((_, i) => i !== index));
+};
+
+const updateImagingStudy = (index: number, field: "name" | "result", value: string) => {
+  setImagingStudies(
+    imagingStudies.map((study, i) => (i === index ? { ...study, [field]: value } : study))
+  );
+};
+
+// Other Investigations
+const [otherInvestigations, setOtherInvestigations] = useState([{ name: "", result: "" }]);
+
+const addInvestigation = () => {
+  setOtherInvestigations([...otherInvestigations, { name: "", result: "" }]);
+};
+
+const removeInvestigation = (index: number) => {
+  setOtherInvestigations(otherInvestigations.filter((_, i) => i !== index));
+};
+
+const updateInvestigation = (index: number, field: "name" | "result", value: string) => {
+  setOtherInvestigations(
+    otherInvestigations.map((investigation, i) =>
+      i === index ? { ...investigation, [field]: value } : investigation
+    )
+  );
+};
+
+
+const saveAllTests = () => {
+  // Empty function
+};
 
 
   return (
@@ -978,185 +1000,170 @@ const DetailsPage = () => {
               {activeSubSection === "investigationsordered" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Investigations Ordered
-                    </h3>
-
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                          </svg>
-                          Blood Tests
-                        </h4>
-                        <div>
-                          {bloodTests.map((test, index) => (
-                            <div key={index} className="flex items-center space-x-2 mb-2">
-                              <input
-                                type="text"
-                                placeholder="Enter blood test"
-                                value={test}
-                                onChange={(e) => {
-                                  const newTests = [...bloodTests];
-                                  newTests[index] = e.target.value;
-                                  setBloodTests(newTests);
-                                }}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              />
-                              {bloodTests.length > 1 && (
-                                <button
-                                  onClick={() => removeBloodTest(index)}
-                                  className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                                >
-                                  <Trash size={18} />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-
-                          <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={addBloodTest}
-                              className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                            >
-                              <PlusCircle size={20} className="mr-2" />
-                              Add More
-                            </button>
-
-                            <button
-                              onClick={updateBloodTests}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
-                          </div>
-                        </div>
-
-                      </div>
-
-                      <div>
-                        <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                          </svg>
-                          Imaging Studies
-                        </h4>
-                        <div>
-                          {imagingStudies.map((study, index) => (
-                            <div key={index} className="flex items-center space-x-2 mb-2">
-                              <input
-                                type="text"
-                                placeholder="Enter imaging study"
-                                value={study}
-                                onChange={(e) => {
-                                  const newStudies = [...imagingStudies];
-                                  newStudies[index] = e.target.value;
-                                  setImagingStudies(newStudies);
-                                }}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              />
-                              {imagingStudies.length > 1 && (
-                                <button
-                                  onClick={() => removeImagingStudy(index)}
-                                  className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                                >
-                                  <Trash size={18} />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-
-                          <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={addImagingStudy}
-                              className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                            >
-                              <PlusCircle size={20} className="mr-2" />
-                              Add More
-                            </button>
-
-                            <button
-                              onClick={updateImagingStudies}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
-                          </div>
-                        </div>
-
-                      </div>
-
-                      <div>
-                        <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                          </svg>
-                          Other Investigations
-                        </h4>
-                        <div>
-                          {otherInvestigations.map((investigation, index) => (
-                            <div key={index} className="flex items-center space-x-2 mb-2">
-                              <input
-                                type="text"
-                                placeholder="Enter other investigation"
-                                value={investigation}
-                                onChange={(e) => {
-                                  const newInvestigations = [...otherInvestigations];
-                                  newInvestigations[index] = e.target.value;
-                                  setOtherInvestigations(newInvestigations);
-                                }}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              />
-                              {otherInvestigations.length > 1 && (
-                                <button
-                                  onClick={() => removeInvestigation(index)}
-                                  className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                                >
-                                  <Trash size={18} />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-
-                          <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={addInvestigation}
-                              className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                            >
-                              <PlusCircle size={20} className="mr-2" />
-                              Add More
-                            </button>
-
-                            <button
-                              onClick={updateInvestigations}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+                  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                  Blood Tests
+                </h4>
+                <div>
+                  {bloodTests.map((test, index) => (
+                    <div key={index} className="flex items-center space-x-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Test Name"
+                        value={test.name}
+                        onChange={(e) => updateBloodTest(index, "name", e.target.value)}
+                        className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Result"
+                        value={test.result}
+                        onChange={(e) => updateBloodTest(index, "result", e.target.value)}
+                        className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      {bloodTests.length > 1 && (
+                        <button
+                          onClick={() => removeBloodTest(index)}
+                          className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      )}
                     </div>
-                    <div className="w-full border-t border-gray-300 mt-4"></div>
-
-                    <div className="flex justify-end space-x-2 mt-4">
-                      <button
-                        onClick={updateSurgeries}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                      >
-                        <Check size={20} className="mr-2" />
-                        Save
-                      </button>
-                    </div>
+                  ))}
+              
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <button
+                      onClick={addBloodTest}
+                      className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                    >
+                      <PlusCircle size={20} className="mr-2" />
+                      Add More
+                    </button>
+              
+                    <button
+  onClick={() => updateBloodTest(bloodTests.length - 1, "name", "new value")}
+  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                    >
+                      <Save size={20} className="mr-2" />
+                      Update
+                    </button>
                   </div>
                 </div>
+                <div>
+  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+    </svg>
+    Imaging Studies
+  </h4>
+  <div>
+    {imagingStudies.map((study, index) => (
+      <div key={index} className="flex items-center space-x-2 mb-2">
+        <input
+          type="text"
+          placeholder="Study Name"
+          value={study.name}
+          onChange={(e) => updateImagingStudy(imagingStudies.length -1, "name", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <input
+          type="text"
+          placeholder="Result"
+          value={study.result}
+          onChange={(e) => updateImagingStudy(index, "result", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {imagingStudies.length > 1 && (
+          <button
+            onClick={() => removeImagingStudy(index)}
+            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+          >
+            <Trash size={18} />
+          </button>
+        )}
+      </div>
+    ))}
+
+    <div className="flex justify-end space-x-2 mt-4">
+      <button
+        onClick={addImagingStudy}
+        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+      >
+        <PlusCircle size={20} className="mr-2" />
+        Add More
+      </button>
+
+      <button
+  onClick={() => updateImagingStudy(imagingStudies.length - 1, "name", "new value")}
+  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+      >
+        <Save size={20} className="mr-2" />
+        Update
+      </button>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+    </svg>
+    Other Investigations
+  </h4>
+  <div>
+    {otherInvestigations.map((investigation, index) => (
+      <div key={index} className="flex items-center space-x-2 mb-2">
+        <input
+          type="text"
+          placeholder="Investigation Name"
+          value={investigation.name}
+          onChange={(e) => updateInvestigation(index, "name", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <input
+          type="text"
+          placeholder="Result"
+          value={investigation.result}
+          onChange={(e) => updateInvestigation(index, "result", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {otherInvestigations.length > 1 && (
+          <button
+            onClick={() => removeInvestigation(index)}
+            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+          >
+            <Trash size={18} />
+          </button>
+        )}
+      </div>
+    ))}
+
+    <div className="flex justify-end space-x-2 mt-4">
+      <button
+        onClick={addInvestigation}
+        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+      >
+        <PlusCircle size={20} className="mr-2" />
+        Add More
+      </button>
+
+      <button
+  onClick={() => updateInvestigation(imagingStudies.length - 1, "name", "new value")}
+  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+      >
+        <Save size={20} className="mr-2" />
+        Update
+      </button>
+    </div>
+  </div>
+</div>
+
+              </div>
+              </div>
               )}
 
               {/* Observations Section */}
