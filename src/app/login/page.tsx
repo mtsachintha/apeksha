@@ -11,11 +11,25 @@ const LoginPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Logging in with:", formData);
-    // API call for authentication goes here
-  };
+    
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+  
+    const data = await res.json();
+    
+    if (res.ok) {
+      localStorage.setItem("token", data.token);
+      alert("Login successful!");
+      // Redirect or handle logged-in state
+    } else {
+      alert(data.message);
+    }
+  };  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">

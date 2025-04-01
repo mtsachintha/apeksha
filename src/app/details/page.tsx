@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { PlusCircle, Trash, Save, Check } from "lucide-react";
+import { PlusCircle, Trash, Save, Check, BriefcaseMedical, SquareActivity } from "lucide-react";
 import { FaUserMd, FaChevronDown, FaArrowRight, FaCalendarAlt, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
-import Image from "next/image";
 
 const DetailsPage = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -19,6 +18,70 @@ const DetailsPage = () => {
   const removeFamilyRecord = (index: number) => {
     setFamilyHistory(familyHistory.filter((_, i) => i !== index));
   };
+
+  // Medications
+  const [medications, setMedications] = useState([
+    { name: "", dose: "", start: "", end: "" }
+  ]);
+  const addMedication = () => {
+    setMedications([...medications, { name: "", dose: "", start: "", end: "" }]);
+  };
+  const removeMedication = (index: number) => {
+    setMedications(medications.filter((_, i) => i !== index));
+  };
+  const updateMedications = () => {
+    console.log("Medications updated:", medications);
+    // You can add logic here to save the data to a database or API
+  };
+
+  // Surgeries Performed
+  const [surgeriesPerformed, setSurgeriesPerformed] = useState([
+    { name: "", date: "", notes: "", complications: "" }
+  ]);
+
+  const addSurgeryPerformed = () => {
+    setSurgeriesPerformed([...surgeriesPerformed, { name: "", date: "", notes: "", complications: "" }]);
+  };
+
+  const removeSurgeryPerformed = (index: number) => {
+    setSurgeriesPerformed(surgeriesPerformed.filter((_, i) => i !== index));
+  };
+
+  const updateSurgeriesPerformed = () => {
+    // Implement update logic here
+  };
+
+  // Patient Records
+  const [patientRecords, setPatientRecords] = useState([
+    { date: "", note: "" }
+  ]);
+
+  const addPatientRecord = () => {
+    setPatientRecords([...patientRecords, { date: "", note: "" }]);
+  };
+
+  const removePatientRecord = (index: number) => {
+    setPatientRecords(patientRecords.filter((_, i) => i !== index));
+  };
+
+  const updatePatientRecords = () => {
+    // Implement update logic here
+  };
+
+  // Add a complication record
+  const [complicationRecords, setComplicationRecords] = useState([
+    { date: "", complication: "", severity: "normal" }
+  ]);
+  const addComplicationRecord = () => {
+    setComplicationRecords([...complicationRecords, { date: "", complication: "", severity: "normal" }]);
+  };
+  const removeComplicationRecord = (index: number) => {
+    setComplicationRecords(complicationRecords.filter((_, i) => i !== index));
+  };
+  const updateComplicationRecord = () => {
+    console.log("Updated illnesses:", allergies);
+  };
+
 
   //chronicIllnesses
   const [chronicIllnesses, setChronicIllnesses] = useState([""]);
@@ -58,6 +121,76 @@ const DetailsPage = () => {
   const updateSurgeries = () => {
     // Add your update logic here
   };
+
+  // General Inspection
+  const [generalInspection, setGeneralInspection] = useState([""]);
+  const addInspection = () => {
+    setGeneralInspection([...generalInspection, ""]);
+  };
+  const removeInspection = (index: number) => {
+    setGeneralInspection(generalInspection.filter((_, i) => i !== index));
+  };
+  const updateInspection = () => {
+    // Add your update logic here
+  };
+
+// Blood Tests
+const [bloodTests, setBloodTests] = useState([{ name: "", result: "" }]);
+
+const addBloodTest = () => {
+  setBloodTests([...bloodTests, { name: "", result: "" }]);
+};
+
+const removeBloodTest = (index: number) => {
+  setBloodTests(bloodTests.filter((_, i) => i !== index));
+};
+
+const updateBloodTest = (index: number, field: "name" | "result", value: string) => {
+  setBloodTests(
+    bloodTests.map((test, i) => (i === index ? { ...test, [field]: value } : test))
+  );
+};
+
+// Imaging Studies
+const [imagingStudies, setImagingStudies] = useState([{ name: "", result: "" }]);
+
+const addImagingStudy = () => {
+  setImagingStudies([...imagingStudies, { name: "", result: "" }]);
+};
+
+const removeImagingStudy = (index: number) => {
+  setImagingStudies(imagingStudies.filter((_, i) => i !== index));
+};
+
+const updateImagingStudy = (index: number, field: "name" | "result", value: string) => {
+  setImagingStudies(
+    imagingStudies.map((study, i) => (i === index ? { ...study, [field]: value } : study))
+  );
+};
+
+// Other Investigations
+const [otherInvestigations, setOtherInvestigations] = useState([{ name: "", result: "" }]);
+
+const addInvestigation = () => {
+  setOtherInvestigations([...otherInvestigations, { name: "", result: "" }]);
+};
+
+const removeInvestigation = (index: number) => {
+  setOtherInvestigations(otherInvestigations.filter((_, i) => i !== index));
+};
+
+const updateInvestigation = (index: number, field: "name" | "result", value: string) => {
+  setOtherInvestigations(
+    otherInvestigations.map((investigation, i) =>
+      i === index ? { ...investigation, [field]: value } : investigation
+    )
+  );
+};
+
+
+const saveAllTests = () => {
+  // Empty function
+};
 
 
   return (
@@ -107,22 +240,21 @@ const DetailsPage = () => {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex space-x-1">
             {['Dashboard', 'Details', 'Clinical'].map(tab => (
-                <button
+              <button
                 key={tab}
                 onClick={() => {
                   setActiveTab(tab.toLowerCase());
-            
+
                   if (tab === "Details") {
                     setActiveSubSection("demographics");
                   } else if (tab === "Clinical") {
                     setActiveSubSection("primarydiagnosis");
                   }
                 }}
-                className={`px-4 py-3 font-medium text-sm rounded-t-lg transition-colors duration-200 ${
-                  activeTab === tab.toLowerCase()
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+                className={`px-4 py-3 font-medium text-sm rounded-t-lg transition-colors duration-200 ${activeTab === tab.toLowerCase()
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
+                  }`}
               >
                 {tab}
               </button>
@@ -220,8 +352,8 @@ const DetailsPage = () => {
                 <button
                   onClick={() => setActiveSubSection("demographics")}
                   className={`w-full text-left px-4 py-3 rounded-md transition-colors flex items-center gap-2 ${activeSubSection === "demographics"
-                      ? "bg-blue-100 text-blue-700 font-medium"
-                      : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-blue-100 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-50"
                     }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,8 +364,8 @@ const DetailsPage = () => {
                 <button
                   onClick={() => setActiveSubSection("social")}
                   className={`w-full text-left px-4 py-3 rounded-md transition-colors flex items-center gap-2 ${activeSubSection === "social"
-                      ? "bg-blue-100 text-blue-700 font-medium"
-                      : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-blue-100 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-50"
                     }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,8 +376,8 @@ const DetailsPage = () => {
                 <button
                   onClick={() => setActiveSubSection("background")}
                   className={`w-full text-left px-4 py-3 rounded-md transition-colors flex items-center gap-2 ${activeSubSection === "background"
-                      ? "bg-blue-100 text-blue-700 font-medium"
-                      : "text-gray-600 hover:bg-gray-50"
+                    ? "bg-blue-100 text-blue-700 font-medium"
+                    : "text-gray-600 hover:bg-gray-50"
                     }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -354,15 +486,17 @@ const DetailsPage = () => {
                         rows={3}
                       />
                     </div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+
                     <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={updateSurgeries}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
-                          </div>
+                      <button
+                        onClick={updateSurgeries}
+                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Check size={20} className="mr-2" />
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -584,18 +718,18 @@ const DetailsPage = () => {
                       </div>
                     </div>
                     {/* Horizontal Divider */}
-<div className="w-full border-t border-gray-300 mt-4"></div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
 
-{/* Button Section */}
-<div className="flex justify-end space-x-2 mt-4">
-  <button
-    onClick={updateSurgeries}
-    className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-  >
-    <Check size={20} className="mr-2" />
-    Save
-  </button>
-</div>
+                    {/* Button Section */}
+                    <div className="flex justify-end space-x-2 mt-4">
+                      <button
+                        onClick={updateSurgeries}
+                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Check size={20} className="mr-2" />
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -670,23 +804,23 @@ const DetailsPage = () => {
                     </div>
 
                     <div className="mt-4">
-                    <div className="flex justify-end space-x-2 mt-4">
-                          <button
-                            onClick={addSurgery}
-                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                          >
-                            <PlusCircle size={20} className="mr-2" />
-                            Add More
-                          </button>
+                      <div className="flex justify-end space-x-2 mt-4">
+                        <button
+                          onClick={addSurgery}
+                          className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                        >
+                          <PlusCircle size={20} className="mr-2" />
+                          Add More
+                        </button>
 
-                          <button
-                            onClick={updateSurgeries}
-                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                          >
-                            <Save size={20} className="mr-2" />
-                            Update
-                          </button>
-                        </div>
+                        <button
+                          onClick={updateSurgeries}
+                          className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        >
+                          <Save size={20} className="mr-2" />
+                          Update
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -706,17 +840,18 @@ const DetailsPage = () => {
                 {[
                   { name: "Primary Diagnosis", icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" },
                   { name: "Investigations Ordered", icon: "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" },
-                  { name: "Observations", icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z" },
-                  { name: "Treatments Given", icon: "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" },
-                  { name: "Post-treatment Conditions", icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" },
+                  { name: "Vital Signs", icon: "M22 12h-4l-3 9L9 3l-3 9H2" },
+                  { name: "Medications", icon: "M10.5 5.5l8 8m-3-9a5 5 0 00-7.07 0L5.5 7.93a5 5 0 000 7.07m3 3a5 5 0 007.07 0l2.43-2.43a5 5 0 000-7.07" },
+                  { name: "Suregries", icon: "M3 3h18v18H3V3zm9 4v4m0 4h.01" },
+                  { name: "Patient Log", icon: "M9 12h6m-3-3v6M10 4h4M12 2v4M8 2h8a2 2 0 012 2v14a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2z" },
                   { name: "Complications & Risks", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }
                 ].map((section) => (
                   <button
                     key={section.name}
                     onClick={() => setActiveSubSection(section.name.toLowerCase().replace(/ /g, '').replace('-', '').replace('&', ''))}
                     className={`w-full text-left px-4 py-3 rounded-md transition-colors flex items-center gap-2 ${activeSubSection === section.name.toLowerCase().replace(/ /g, '').replace('-', '').replace('&', '')
-                        ? "bg-blue-100 text-blue-700 font-medium"
-                        : "text-gray-600 hover:bg-gray-50"
+                      ? "bg-blue-100 text-blue-700 font-medium"
+                      : "text-gray-600 hover:bg-gray-50"
                       }`}
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -846,15 +981,17 @@ const DetailsPage = () => {
                         </div>
                       </div>
                     </div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+
                     <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={updateSurgeries}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
-                          </div>
+                      <button
+                        onClick={updateSurgeries}
+                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Check size={20} className="mr-2" />
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -863,79 +1000,190 @@ const DetailsPage = () => {
               {activeSubSection === "investigationsordered" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      Investigations Ordered
-                    </h3>
-
-                    <div className="space-y-6">
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                          </svg>
-                          Blood Tests
-                        </h4>
-                        <textarea
-                          placeholder="Enter blood tests ordered"
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={3}
-                        />
-                      </div>
-
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                          </svg>
-                          Imaging Studies
-                        </h4>
-                        <textarea
-                          placeholder="Enter imaging studies ordered"
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={3}
-                        />
-                      </div>
-
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                          </svg>
-                          Other Investigations
-                        </h4>
-                        <textarea
-                          placeholder="Enter other investigations"
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={3}
-                        />
-                      </div>
+                  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                  Blood Tests
+                </h4>
+                <div>
+                  {bloodTests.map((test, index) => (
+                    <div key={index} className="flex items-center space-x-2 mb-2">
+                      <input
+                        type="text"
+                        placeholder="Test Name"
+                        value={test.name}
+                        onChange={(e) => updateBloodTest(index, "name", e.target.value)}
+                        className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Result"
+                        value={test.result}
+                        onChange={(e) => updateBloodTest(index, "result", e.target.value)}
+                        className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                      {bloodTests.length > 1 && (
+                        <button
+                          onClick={() => removeBloodTest(index)}
+                          className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      )}
                     </div>
-                    <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={updateSurgeries}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
-                          </div>
+                  ))}
+              
+                  <div className="flex justify-end space-x-2 mt-4">
+                    <button
+                      onClick={addBloodTest}
+                      className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                    >
+                      <PlusCircle size={20} className="mr-2" />
+                      Add More
+                    </button>
+              
+                    <button
+  onClick={() => updateBloodTest(bloodTests.length - 1, "name", "new value")}
+  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                    >
+                      <Save size={20} className="mr-2" />
+                      Update
+                    </button>
                   </div>
                 </div>
+                <div>
+  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+    </svg>
+    Imaging Studies
+  </h4>
+  <div>
+    {imagingStudies.map((study, index) => (
+      <div key={index} className="flex items-center space-x-2 mb-2">
+        <input
+          type="text"
+          placeholder="Study Name"
+          value={study.name}
+          onChange={(e) => updateImagingStudy(imagingStudies.length -1, "name", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <input
+          type="text"
+          placeholder="Result"
+          value={study.result}
+          onChange={(e) => updateImagingStudy(index, "result", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {imagingStudies.length > 1 && (
+          <button
+            onClick={() => removeImagingStudy(index)}
+            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+          >
+            <Trash size={18} />
+          </button>
+        )}
+      </div>
+    ))}
+
+    <div className="flex justify-end space-x-2 mt-4">
+      <button
+        onClick={addImagingStudy}
+        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+      >
+        <PlusCircle size={20} className="mr-2" />
+        Add More
+      </button>
+
+      <button
+  onClick={() => updateImagingStudy(imagingStudies.length - 1, "name", "new value")}
+  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+      >
+        <Save size={20} className="mr-2" />
+        Update
+      </button>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+    </svg>
+    Other Investigations
+  </h4>
+  <div>
+    {otherInvestigations.map((investigation, index) => (
+      <div key={index} className="flex items-center space-x-2 mb-2">
+        <input
+          type="text"
+          placeholder="Investigation Name"
+          value={investigation.name}
+          onChange={(e) => updateInvestigation(index, "name", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        <input
+          type="text"
+          placeholder="Result"
+          value={investigation.result}
+          onChange={(e) => updateInvestigation(index, "result", e.target.value)}
+          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
+        {otherInvestigations.length > 1 && (
+          <button
+            onClick={() => removeInvestigation(index)}
+            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+          >
+            <Trash size={18} />
+          </button>
+        )}
+      </div>
+    ))}
+
+    <div className="flex justify-end space-x-2 mt-4">
+      <button
+        onClick={addInvestigation}
+        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+      >
+        <PlusCircle size={20} className="mr-2" />
+        Add More
+      </button>
+
+      <button
+  onClick={() => updateInvestigation(imagingStudies.length - 1, "name", "new value")}
+  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+      >
+        <Save size={20} className="mr-2" />
+        Update
+      </button>
+    </div>
+  </div>
+</div>
+
+              </div>
+              </div>
               )}
 
               {/* Observations Section */}
-              {activeSubSection === "observations" && (
+              {activeSubSection === "vitalsigns" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      Observations
-                    </h3>
+                  <div className="flex justify-between items-center mb-6">
+    <h3 className="text-l font-semibold text-gray-800 flex items-center gap-2">
+      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 3 0 016 0z" />
+      </svg>
+      Observations
+    </h3>
+    <select className="border border-gray-300 rounded px-3 py-1 text-gray-700">
+      <option>Select Date</option>
+      <option>2025-03-30</option>
+      <option>2025-03-29</option>
+      <option>2025-03-28</option>
+    </select>
+  </div>
 
                     <div className="space-y-6">
                       <div>
@@ -973,6 +1221,26 @@ const DetailsPage = () => {
                         </div>
                       </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Weight</label>
+                          <input
+                            type="text"
+                            placeholder="e.g., 120/80"
+                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
+                          <input
+                            type="text"
+                            placeholder="e.g., 120/80"
+                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+
+                      </div>
+
                       <div>
                         <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -980,11 +1248,50 @@ const DetailsPage = () => {
                           </svg>
                           General Observations
                         </h4>
-                        <textarea
-                          placeholder="Enter general observations"
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={3}
-                        />
+                        <div>
+                          {generalInspection.map((inspection, index) => (
+                            <div key={index} className="flex items-center space-x-2 mb-2">
+                              <input
+                                type="text"
+                                placeholder="Enter general inspection"
+                                value={inspection}
+                                onChange={(e) => {
+                                  const newInspection = [...generalInspection];
+                                  newInspection[index] = e.target.value;
+                                  setGeneralInspection(newInspection);
+                                }}
+                                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                              {generalInspection.length > 1 && (
+                                <button
+                                  onClick={() => removeInspection(index)}
+                                  className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                                >
+                                  <Trash size={18} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+
+                          <div className="flex justify-end space-x-2 mt-4">
+                            <button
+                              onClick={addInspection}
+                              className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                            >
+                              <PlusCircle size={20} className="mr-2" />
+                              Add More
+                            </button>
+
+                            <button
+                              onClick={updateInspection}
+                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                            >
+                              <Save size={20} className="mr-2" />
+                              Update
+                            </button>
+                          </div>
+                        </div>
+
                       </div>
 
                       <div>
@@ -1001,18 +1308,467 @@ const DetailsPage = () => {
                         />
                       </div>
                     </div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+
                     <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={updateSurgeries}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
-                          </div>
+                      <button
+                        onClick={updateSurgeries}
+                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Check size={20} className="mr-2" />
+                        Save
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
+
+              {activeSubSection === "medications" && (
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
+                  <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    Medications
+                  </h3>
+
+                  <div className="space-y-4">
+                    {medications.map((medication, index) => (
+                      <div key={index} className="p-4 border border-gray-300 rounded-md space-y-2">
+                        <input
+                          type="text"
+                          placeholder="E.g., Paracetamol"
+                          value={medication.name}
+                          onChange={(e) => {
+                            const newMedications = [...medications];
+                            newMedications[index].name = e.target.value;
+                            setMedications(newMedications);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <input
+                          type="text"
+                          placeholder="E.g., 500mg"
+                          value={medication.dose}
+                          onChange={(e) => {
+                            const newMedications = [...medications];
+                            newMedications[index].dose = e.target.value;
+                            setMedications(newMedications);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <input
+                          type="date"
+                          value={medication.start}
+                          onChange={(e) => {
+                            const newMedications = [...medications];
+                            newMedications[index].start = e.target.value;
+                            setMedications(newMedications);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <input
+                          type="date"
+                          value={medication.end}
+                          onChange={(e) => {
+                            const newMedications = [...medications];
+                            newMedications[index].end = e.target.value;
+                            setMedications(newMedications);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        {medications.length > 1 && (
+                          <button
+                            onClick={() => removeMedication(index)}
+                            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors w-full text-center"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex flex-col space-y-2">
+                    <button
+                      onClick={addMedication}
+                      className="flex items-center justify-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors w-full"
+                    >
+                      <PlusCircle size={20} className="mr-2" />
+                      Add More
+                    </button>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+
+                    <button
+                      onClick={updateMedications}
+                      className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
+                    >
+                      <Check size={20} className="mr-2" />
+                      Save
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeSubSection === "suregries" && (
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
+                  <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    Surgeries Performed
+                  </h3>
+
+                  <div className="space-y-4">
+                    {surgeriesPerformed.map((surgery, index) => (
+                      <div key={index} className="p-4 border border-gray-300 rounded-md space-y-2">
+                        <input
+                          type="text"
+                          placeholder="E.g., Appendectomy"
+                          value={surgery.name}
+                          onChange={(e) => {
+                            const newSurgeriesPerformed = [...surgeriesPerformed];
+                            newSurgeriesPerformed[index].name = e.target.value;
+                            setSurgeriesPerformed(newSurgeriesPerformed);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <input
+                          type="date"
+                          value={surgery.date}
+                          onChange={(e) => {
+                            const newSurgeriesPerformed = [...surgeriesPerformed];
+                            newSurgeriesPerformed[index].date = e.target.value;
+                            setSurgeriesPerformed(newSurgeriesPerformed);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                        <textarea
+                          placeholder="Notes"
+                          value={surgery.notes}
+                          onChange={(e) => {
+                            const newSurgeriesPerformed = [...surgeriesPerformed];
+                            newSurgeriesPerformed[index].notes = e.target.value;
+                            setSurgeriesPerformed(newSurgeriesPerformed);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        ></textarea>
+                        <textarea
+                          placeholder="Complications"
+                          value={surgery.complications}
+                          onChange={(e) => {
+                            const newSurgeriesPerformed = [...surgeriesPerformed];
+                            newSurgeriesPerformed[index].complications = e.target.value;
+                            setSurgeriesPerformed(newSurgeriesPerformed);
+                          }}
+                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        ></textarea>
+                        {surgeriesPerformed.length > 1 && (
+                          <button
+                            onClick={() => removeSurgeryPerformed(index)}
+                            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors w-full text-center"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex flex-col space-y-2">
+                    <button
+                      onClick={addSurgeryPerformed}
+                      className="flex items-center justify-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors w-full"
+                    >
+                      <PlusCircle size={20} className="mr-2" />
+                      Add More
+                    </button>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+                    <button
+                      onClick={updateSurgeriesPerformed}
+                      className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
+                    >
+                      <Save size={20} className="mr-2" />
+                      Update
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {activeSubSection === "patientlog" && (
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="p-6">
+                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                      </svg>
+                      Patient Records
+                    </h3>
+
+                    <div className="space-y-4 md:hidden">
+                      {patientRecords.map((record, index) => (
+                        <div key={index} className="p-4 border border-gray-300 rounded-lg">
+                          <div className="flex justify-between items-center mb-2">
+                            <input
+                              type="date"
+                              value={record.date}
+                              onChange={(e) => {
+                                const newRecords = [...patientRecords];
+                                newRecords[index].date = e.target.value;
+                                setPatientRecords(newRecords);
+                              }}
+                              className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {patientRecords.length > 1 && (
+                              <button
+                                onClick={() => removePatientRecord(index)}
+                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                              >
+                                <Trash size={18} />
+                              </button>
+                            )}
+                          </div>
+                          <textarea
+                            placeholder="Note"
+                            value={record.note}
+                            onChange={(e) => {
+                              const newRecords = [...patientRecords];
+                              newRecords[index].note = e.target.value;
+                              setPatientRecords(newRecords);
+                            }}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          ></textarea>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                              Date
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" colSpan={2}>
+                              Note
+                            </th>
+                            <th className="px-6 py-3"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {patientRecords.map((record, index) => (
+                            <tr key={index}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="date"
+                                  value={record.date}
+                                  onChange={(e) => {
+                                    const newRecords = [...patientRecords];
+                                    newRecords[index].date = e.target.value;
+                                    setPatientRecords(newRecords);
+                                  }}
+                                  className="w-48 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap" colSpan={2}>
+                                <textarea
+                                  placeholder="Note"
+                                  value={record.note}
+                                  onChange={(e) => {
+                                    const newRecords = [...patientRecords];
+                                    newRecords[index].note = e.target.value;
+                                    setPatientRecords(newRecords);
+                                  }}
+                                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                ></textarea>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                {patientRecords.length > 1 && (
+                                  <button
+                                    onClick={() => removePatientRecord(index)}
+                                    className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                                  >
+                                    <Trash size={18} />
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="mt-4 flex justify-end space-x-2">
+                      <button
+                        onClick={addPatientRecord}
+                        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        <PlusCircle size={20} className="mr-2" />
+                        Add More
+                      </button>
+                      <button
+                        onClick={updatePatientRecords}
+                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Save size={20} className="mr-2" />
+                        Update
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeSubSection === "complicationsrisks" && (
+                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                  <div className="p-6">
+                    <h3 className="text-l font-semibold text-gray-800 mb-6">Complications and Risks</h3>
+
+                    <div className="space-y-4 md:hidden">
+                      {complicationRecords.map((record, index) => (
+                        <div key={index} className="p-4 border border-gray-300 rounded-lg">
+                          <div className="flex justify-between items-center mb-2">
+                            <input
+                              type="date"
+                              value={record.date}
+                              onChange={(e) => {
+                                const newRecords = [...complicationRecords];
+                                newRecords[index].date = e.target.value;
+                                setComplicationRecords(newRecords);
+                              }}
+                              className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {complicationRecords.length > 1 && (
+                              <button
+                                onClick={() => removeComplicationRecord(index)}
+                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                              >
+                                <Trash size={18} />
+                              </button>
+                            )}
+                          </div>
+                          <input
+                            type="text"
+                            placeholder="Complication or Risk"
+                            value={record.complication}
+                            onChange={(e) => {
+                              const newRecords = [...complicationRecords];
+                              newRecords[index].complication = e.target.value;
+                              setComplicationRecords(newRecords);
+                            }}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <select
+                            value={record.severity}
+                            onChange={(e) => {
+                              const newRecords = [...complicationRecords];
+                              newRecords[index].severity = e.target.value;
+                              setComplicationRecords(newRecords);
+                            }}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2"
+                          >
+                            <option value="high">High</option>
+                            <option value="normal">Normal</option>
+                            <option value="low">Low</option>
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="hidden md:block overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                              Date
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Complication/Risk
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Severity
+                            </th>
+                            <th className="px-6 py-3"></th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {complicationRecords.map((record, index) => (
+                            <tr key={index}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="date"
+                                  value={record.date}
+                                  onChange={(e) => {
+                                    const newRecords = [...complicationRecords];
+                                    newRecords[index].date = e.target.value;
+                                    setComplicationRecords(newRecords);
+                                  }}
+                                  className="w-48 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <input
+                                  type="text"
+                                  placeholder="Complication or Risk"
+                                  value={record.complication}
+                                  onChange={(e) => {
+                                    const newRecords = [...complicationRecords];
+                                    newRecords[index].complication = e.target.value;
+                                    setComplicationRecords(newRecords);
+                                  }}
+                                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <select
+                                  value={record.severity}
+                                  onChange={(e) => {
+                                    const newRecords = [...complicationRecords];
+                                    newRecords[index].severity = e.target.value;
+                                    setComplicationRecords(newRecords);
+                                  }}
+                                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                >
+                                  <option value="high">High</option>
+                                  <option value="normal">Normal</option>
+                                  <option value="low">Low</option>
+                                </select>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right">
+                                {complicationRecords.length > 1 && (
+                                  <button
+                                    onClick={() => removeComplicationRecord(index)}
+                                    className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                                  >
+                                    <Trash size={18} />
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div className="mt-4 flex justify-end space-x-2">
+                      <button
+                        onClick={addComplicationRecord}
+                        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        <PlusCircle size={20} className="mr-2" />
+                        Add More
+                      </button>
+                      <button
+                        onClick={updatePatientRecords}
+                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                      >
+                        <Save size={20} className="mr-2" />
+                        Update
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         )}
