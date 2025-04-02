@@ -1,8 +1,66 @@
 "use client";
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useState, useEffect} from "react";
 import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock } from "react-icons/fa";
 
+interface PatientData {
+  _id: string;
+  basic_details: {
+    title: string;
+    first_name: string;
+    last_name: string;
+    gender: string;
+    birthday: string;
+    ward: string;
+    phone: string;
+    email: string;
+    address: string;
+    notes: string;
+  };
+  patient_id: string;
+  medical_history: {
+    smoking: string;
+    alcohol: string;
+    chronic_illness: string[];
+    allergies: string[];
+    previous_surgeries: string[];
+  };
+  family_background: { disease: string; relation: string }[];
+  vitals: {
+    weight: number;
+    height: number;
+    blood_pressure: string;
+    pulse: number;
+    temperature: number;
+    date: string;
+    general_observations: string[];
+    special_notes: string;
+  }[];
+  primary_diagnosis: {
+    cancer_type: string;
+    sub_category: string;
+    stage: string;
+    date_assessed: string;
+    findings: string;
+    suspicious_lumps: string;
+    pain_assessment: string;
+    consulting_doctor: string;
+    notes: string;
+  };
+  lab_results: {
+    blood_tests: string[];
+    imaging_studies: string[];
+    other_investigations: string[];
+  };
+  medications: { name: string; dosage: string; start_date: string; end_date: string }[];
+  surgeries: { name: string; date: string; notes: string; complication: string }[];
+  patient_log: { date: string; note: string }[];
+  complications_and_risks: { date: string; complication: string; severity: string }[];
+}
+
 export default function Home() {
+  const [patients, setPatients] = useState<PatientData[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     type: "",
@@ -27,6 +85,32 @@ export default function Home() {
     setSearchQuery(e.target.value);
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch("/api/patients", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to fetch data");
+
+        const data = await res.json();
+        setPatients(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+  }
+
   const wardList = [
     { wardNo: "WRD0012", fullName: "Fredrik North De Silva", lastUpdated: "2 mins ago" },
     { wardNo: "WRD0013", fullName: "Alice Johnson", lastUpdated: "5 mins ago" },
@@ -42,7 +126,7 @@ export default function Home() {
       <header className="bg-gradient-to-r from-gray-800 to-blue-400 text-white px-6 py-4 flex justify-between items-center shadow-xl">
         <img 
           src="/logo_main.png" 
-          alt="Logo" 
+          alt="Logo"
           className="h-12 transition-all hover:scale-105 hover:rotate-2 duration-300" 
         />
         <div className="flex items-center space-x-4 bg-blue-900/30 px-4 py-2 rounded-full">
@@ -130,50 +214,43 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col p-6">
-          {/* Mobile Filter Button */}
-          <button 
-            className="md:hidden bg-blue-600 text-white px-5 py-3 mb-6 rounded-xl shadow-lg hover:bg-blue-700 transition-all flex items-center gap-2 w-max"
-            onClick={() => setShowFilters(true)}
-          >
-            <FaFilter /> Open Filters
-          </button>
-
-          {/* Scrollable Ward List */}
-          <div className="flex-1 overflow-y-auto max-h-[calc(100vh-180px)] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-2">
-            {wardList.map((ward, i) => (
-              <div 
-                key={i} 
-                className="group relative p-6 bg-white border border-gray-100 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:border-blue-200 overflow-hidden"
-              >
-                {/* Decorative accent */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-blue-300"></div>
-                
-                <div className="flex flex-col h-full">
-                  <div className="flex items-start justify-between mb-4">
-                    <span className="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                      {ward.wardNo}
-                    </span>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <FaClock className="mr-1" /> {ward.lastUpdated}
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors">
-                    {ward.fullName}
-                  </h3>
-                  
-                  <div className="mt-auto pt-4 border-t border-gray-100">
-                    <button className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg">
-                      View Patient
-                      <FaArrowRight className="transition-transform group-hover:translate-x-1" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="flex-1 overflow-y-auto max-h-[calc(100vh-180px)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-3">
+  {wardList.map((ward, i) => (
+    <div 
+      key={i} 
+      className="group relative p-4 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:border-blue-300 overflow-hidden flex flex-col min-h-[200px] sm:min-h-0 h-full"
+    >
+      {/* Decorative accent */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-blue-400"></div>
+      
+      <div className="flex flex-col h-full">
+        <div className="flex flex-col sm:flex-row items-start justify-between mb-2">
+          <span className="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+            Ward No: {ward.wardNo}
+          </span>
+          <div className="flex items-center text-xs text-gray-500 mt-1 sm:mt-0">
+            <FaClock className="mr-1" /> {ward.lastUpdated}
           </div>
+        </div>
+        
+        <h3 className="text-base font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">
+          {ward.fullName}
+        </h3>
+        
+        <p className="text-xs text-gray-700">Cancer Type: <span className="font-semibold">{ward.fullName}</span></p>
+        <p className="text-xs text-gray-700">Status: <span className={`font-semibold ${ward.fullName === 'Critical' ? 'text-red-600' : 'text-green-600'}`}>{ward.fullName}</span></p>
+        
+        <div className="mt-auto pt-3 border-t border-gray-200">
+          <button className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg">
+            View Patient
+            <FaArrowRight className="transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
+      </div>
+    </div>
+  ))}
+</div>
+    </div>
 
           {/* ✅ Pagination */}
           <div className="py-4 bg-white sticky bottom-0 flex justify-center space-x-2 mt-6">
@@ -191,7 +268,5 @@ export default function Home() {
             ))}
           </div>
         </div>
-      </div>
-    </div>
   );
 }

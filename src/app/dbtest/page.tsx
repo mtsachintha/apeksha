@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dbConnect from "./../utils/dbConnect";
-import Patient from "./../models/Patient";
 
 interface PatientData {
   _id: string;
