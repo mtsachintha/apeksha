@@ -130,10 +130,10 @@ export default function Home() {
     <div className="flex h-screen flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-gradient-to-r from-gray-800 to-blue-400 text-white px-6 py-4 flex justify-between items-center shadow-xl">
-        <img 
-          src="/logo_main.png" 
+        <img
+          src="/logo_main.png"
           alt="Logo"
-          className="h-12 transition-all hover:scale-105 hover:rotate-2 duration-300" 
+          className="h-12 hover:scale-105 cursor-pointer"
         />
         <div className="flex items-center space-x-4 bg-blue-900/30 px-4 py-2 rounded-full">
           <FaUserMd className="text-xl" />
@@ -146,7 +146,7 @@ export default function Home() {
         {/* Desktop Filters - Static */}
         <div className="hidden md:block bg-white w-72 p-5 shadow-xl overflow-y-auto">
           <h2 className="text-l font-bold text-gray-500 flex items-center gap-3 mb-6">
-            <FaFilter className="text-gray-500" /> 
+            <FaFilter className="text-gray-500" />
             <span className="bg-gradient-to-r from-gray-500 to-gray-400 bg-clip-text text-transparent">
               Filters
             </span>
@@ -167,22 +167,22 @@ export default function Home() {
           {/* Search Type Radio */}
           <div className="flex gap-4 mt-2 text-gray-600 p-2 bg-gray-50 rounded-md">
             <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <input 
-                type="radio" 
-                name="searchType" 
-                value="wardNo" 
-                checked={searchType === "wardNo"} 
+              <input
+                type="radio"
+                name="searchType"
+                value="wardNo"
+                checked={searchType === "wardNo"}
                 onChange={handleSearchTypeChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500"
               />
               Ward No
             </label>
             <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
-              <input 
-                type="radio" 
-                name="searchType" 
-                value="name" 
-                checked={searchType === "name"} 
+              <input
+                type="radio"
+                name="searchType"
+                value="name"
+                checked={searchType === "name"}
                 onChange={handleSearchTypeChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500"
               />
@@ -215,7 +215,7 @@ export default function Home() {
         </div>
 
         {/* Mobile Filters Toggle */}
-        <button 
+        <button
           className="md:hidden fixed bottom-2 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg z-30 flex items-center justify-center"
           onClick={() => setShowFilters(true)}
         >
@@ -226,11 +226,11 @@ export default function Home() {
         {showFilters && (
           <div className="fixed inset-0 z-40 md:hidden">
             {/* Overlay backdrop */}
-            <div 
+            <div
               className="absolute inset-0 bg-black bg-opacity-50"
               onClick={() => setShowFilters(false)}
             ></div>
-            
+
             {/* Filters panel */}
             <div className="absolute left-0 top-0 h-full w-4/5 bg-white shadow-xl overflow-y-auto">
               <div className="p-5">
@@ -238,7 +238,7 @@ export default function Home() {
                   <h2 className="text-xl font-bold text-gray-700 flex items-center gap-2">
                     <FaFilter /> Filters
                   </h2>
-                  <button 
+                  <button
                     onClick={() => setShowFilters(false)}
                     className="text-gray-500 hover:text-gray-700"
                   >
@@ -258,67 +258,67 @@ export default function Home() {
                   <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
                 </div>
 
-{/* Search */}
-<div className="mt-4 relative group">
-            <input
-              type="text"
-              placeholder={`Search by ${searchType === "name" ? "Name" : "Ward No"}`}
-              className="w-full p-3 pl-10 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 group-hover:shadow-md"
-              value={searchQuery}
-              onChange={handleSearchQueryChange}
-            />
-            <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
-          </div>
+                {/* Search */}
+                <div className="mt-4 relative group">
+                  <input
+                    type="text"
+                    placeholder={`Search by ${searchType === "name" ? "Name" : "Ward No"}`}
+                    className="w-full p-3 pl-10 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 group-hover:shadow-md"
+                    value={searchQuery}
+                    onChange={handleSearchQueryChange}
+                  />
+                  <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
+                </div>
 
-          {/* Search Type Radio */}
-          <div className="flex gap-4 mt-2 text-gray-600 p-2 bg-gray-50 rounded-md">
-            <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-              <input 
-                type="radio" 
-                name="searchType" 
-                value="wardNo" 
-                checked={searchType === "wardNo"} 
-                onChange={handleSearchTypeChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-              />
-              Ward No
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
-              <input 
-                type="radio" 
-                name="searchType" 
-                value="name" 
-                checked={searchType === "name"} 
-                onChange={handleSearchTypeChange}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-              />
-              Name
-            </label>
-          </div>
+                {/* Search Type Radio */}
+                <div className="flex gap-4 mt-2 text-gray-600 p-2 bg-gray-50 rounded-md">
+                  <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <input
+                      type="radio"
+                      name="searchType"
+                      value="wardNo"
+                      checked={searchType === "wardNo"}
+                      onChange={handleSearchTypeChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    Ward No
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
+                    <input
+                      type="radio"
+                      name="searchType"
+                      value="name"
+                      checked={searchType === "name"}
+                      onChange={handleSearchTypeChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    Name
+                  </label>
+                </div>
 
-          {/* Dropdown Filters */}
-          {["Type", "Ward No", "Location", "Gender", "Condition"].map((label) => (
-            <div key={label} className="relative mt-4 group">
-              <select
-                className="block w-full p-3 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm appearance-none pr-10 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 group-hover:shadow-md"
-                onChange={(e) => handleFilterChange(label.toLowerCase().replace(' ', ''), e.target.value)}
-              >
-                <option value="">Select {label}</option>
-                <option value="option1">{label} Option 1</option>
-                <option value="option2">{label} Option 2</option>
-              </select>
-              <FaChevronDown className="absolute right-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors pointer-events-none" />
-            </div>
-          ))}
+                {/* Dropdown Filters */}
+                {["Type", "Ward No", "Location", "Gender", "Condition"].map((label) => (
+                  <div key={label} className="relative mt-4 group">
+                    <select
+                      className="block w-full p-3 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm appearance-none pr-10 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 group-hover:shadow-md"
+                      onChange={(e) => handleFilterChange(label.toLowerCase().replace(' ', ''), e.target.value)}
+                    >
+                      <option value="">Select {label}</option>
+                      <option value="option1">{label} Option 1</option>
+                      <option value="option2">{label} Option 2</option>
+                    </select>
+                    <FaChevronDown className="absolute right-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors pointer-events-none" />
+                  </div>
+                ))}
 
-          {/* Buttons */}
-          <button className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0">
-            Apply Filters
-          </button>
-          <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
-            Reset Filters
-          </button>
-        </div>              </div>
+                {/* Buttons */}
+                <button className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0">
+                  Apply Filters
+                </button>
+                <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
+                  Reset Filters
+                </button>
+              </div>              </div>
           </div>
         )}
 
@@ -327,35 +327,56 @@ export default function Home() {
           {/* Scrollable Cards */}
           <div className="flex-1 overflow-y-auto p-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {wardList.map((ward, i) => (
-                <div 
-                  key={i} 
+              {patients.map((patient) => (
+                <div
+                  key={patient._id}
                   className="group relative p-4 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:border-blue-300 overflow-hidden flex flex-col"
                 >
                   {/* Decorative accent */}
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-blue-400"></div>
-                  
+
                   <div className="flex flex-col flex-grow">
                     <div className="flex flex-col sm:flex-row items-start justify-between mb-2">
                       <span className="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        Ward No: {ward.wardNo}
+                        Ward No: {patient.basic_details.ward}
                       </span>
                       <div className="flex items-center text-xs text-gray-500 mt-1 sm:mt-0">
-                        <FaClock className="mr-1" /> {ward.lastUpdated}
+                        <FaClock className="mr-1" /> Last updated: {new Date().toLocaleDateString()}
                       </div>
                     </div>
-                    
-                    <h3 className="text-base font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {ward.fullName}
-                    </h3>
-                    
+
+                    <h4 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                      {patient.basic_details.title} {patient.basic_details.first_name} {patient.basic_details.last_name}
+                    </h4>
+
                     <div className="flex-grow space-y-2 mb-3">
-                      <p className="text-xs text-gray-700">Cancer Type: <span className="font-semibold">{ward.fullName}</span></p>
-                      <p className="text-xs text-gray-700">Stage: <span className="font-semibold">{ward.fullName}</span></p>
-                      <p className="text-xs text-gray-700">Complications: <span className="font-semibold">{ward.fullName}</span></p>
-                      <p className="text-xs text-gray-700">Status: <span className={`font-semibold ${ward.fullName === 'Critical' ? 'text-red-600' : 'text-green-600'}`}>{ward.fullName}</span></p>
-                      {ward.fullName && (
-                        <p className="text-xs text-gray-700">Notes: <span className="font-normal">{ward.fullName}</span></p>
+                      <p className="text-xs text-gray-700">
+                        Cancer Type: <span className="font-semibold">{patient.primary_diagnosis.cancer_type}</span>
+                      </p>
+                      <p className="text-xs text-gray-700">
+                        Stage: <span className="font-semibold">{patient.primary_diagnosis.stage}</span>
+                      </p>
+                      <p className="text-xs text-gray-700">
+                        Complications: <span className="font-semibold">
+                          {patient.complications_and_risks.length > 0
+                            ? patient.complications_and_risks[0].complication
+                            : 'None'}
+                        </span>
+                      </p>
+                      <p className="text-xs text-gray-700">
+                        Status: <span className={`font-semibold ${patient.complications_and_risks.some(c => c.severity === 'High')
+                            ? 'text-red-600'
+                            : 'text-green-600'
+                          }`}>
+                          {patient.complications_and_risks.some(c => c.severity === 'High')
+                            ? 'Critical'
+                            : 'Stable'}
+                        </span>
+                      </p>
+                      {patient.basic_details.notes && (
+                        <p className="text-xs text-gray-700">
+                          Notes: <span className="font-normal">{patient.basic_details.notes.substring(0, 50)}{patient.basic_details.notes.length > 50 ? '...' : ''}</span>
+                        </p>
                       )}
                     </div>
 
@@ -374,13 +395,12 @@ export default function Home() {
           {/* Fixed Pagination */}
           <div className="py-4 bg-white border-t border-gray-200 sticky bottom-0 flex justify-center space-x-2">
             {[1, 2, 3, 4, "..."].map((num, index) => (
-              <button 
-                key={index} 
-                className={`px-5 py-2 rounded-lg font-medium transition-all duration-200 ${
-                  num === 1 
-                    ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700' 
+              <button
+                key={index}
+                className={`px-5 py-2 rounded-lg font-medium transition-all duration-200 ${num === 1
+                    ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {num}
               </button>
