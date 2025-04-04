@@ -13,7 +13,7 @@ const PatientSchema = new mongoose.Schema({
     address: String,
     notes: String,
   },
-  patient_id: { type: String, required: true, unique: true },
+  patient_id: { type: String, required: true, unique: true, index: true },
   status: { type: String },
   medical_history: {
     smoking: String,
@@ -88,4 +88,6 @@ const PatientSchema = new mongoose.Schema({
 });
 
 // Prevent model re-registration during hot reloads in development
-export default mongoose.models.Patient || mongoose.model("Patient", PatientSchema);
+const Patient = mongoose.models?.Patient || mongoose.model('Patient', PatientSchema);
+
+export default Patient;

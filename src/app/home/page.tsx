@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { SetStateAction, useState, useEffect } from "react";
 import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes } from "react-icons/fa";
 
@@ -381,10 +382,13 @@ export default function Home() {
                     </div>
 
                     <div className="pt-3 border-t border-gray-200">
-                      <button className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg">
-                        View Patient
-                        <FaArrowRight className="transition-transform group-hover:translate-x-1" />
-                      </button>
+                    <Link 
+  href={`/details/${patient.patient_id}`}
+  className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg"
+>
+  View Patient
+  <FaArrowRight className="transition-transform group-hover:translate-x-1" />
+</Link>
                     </div>
                   </div>
                 </div>

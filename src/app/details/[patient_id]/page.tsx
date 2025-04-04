@@ -1,10 +1,98 @@
 "use client";
 
-import React, { useState } from "react";
+import dbConnect from "../../utils/dbConnect";
+import Patient from "../../models/Patient";
+
+import { useParams } from 'next/navigation';
+import React, { useState, useEffect } from "react";
 import { PlusCircle, Trash, Save, Check, BriefcaseMedical, SquareActivity } from "lucide-react";
 import { FaUserMd, FaChevronDown, FaArrowRight, FaCalendarAlt, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 
+
+interface Patient {
+  _id: string;
+  basic_details: {
+    title: string;
+    first_name: string;
+    last_name: string;
+    gender: string;
+    birthday: string;
+    ward: string;
+    phone: string;
+    email: string;
+    address: string;
+    notes: string;
+  };
+  patient_id: string;
+  status: string;
+  medical_history: {
+    smoking: string;
+    alcohol: string;
+    chronic_illness: string[];
+    allergies: string[];
+    previous_surgeries: string[];
+  };
+  family_background: { disease: string; relation: string }[];
+  vitals: {
+    weight: number;
+    height: number;
+    blood_pressure: string;
+    pulse: number;
+    temperature: number;
+    date: string;
+    general_observations: string[];
+    special_notes: string;
+  }[];
+  primary_diagnosis: {
+    cancer_type: string;
+    sub_category: string;
+    stage: string;
+    date_assessed: string;
+    findings: string;
+    suspicious_lumps: string;
+    pain_assessment: string;
+    consulting_doctor: string;
+    notes: string;
+  };
+  lab_results: {
+    blood_tests: string[];
+    imaging_studies: string[];
+    other_investigations: string[];
+  };
+  medications: { name: string; dosage: string; start_date: string; end_date: string }[];
+  surgeries: { name: string; date: string; notes: string; complication: string }[];
+  patient_log: { date: string; note: string }[];
+  complications_and_risks: { date: string; complication: string; severity: string }[];
+}
+
 const DetailsPage = () => {
+  
+  const params = useParams();
+  const [patient, setPatient] = useState<Patient | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPatient = async () => {
+      try {
+        const res = await fetch(`/api/patients/${params.patient_id}`, { 
+          cache: 'no-store' 
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch patient data");
+        
+        const { data } = await res.json();
+        setPatient(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An unknown error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPatient();
+  }, [params.patient_id]); // Re-fetch when patient_id changes
+
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activeSubSection, setActiveSubSection] = useState("demographics");
   const [menuOpen, setMenuOpen] = useState(false);
@@ -192,6 +280,39 @@ const saveAllTests = () => {
   // Empty function
 };
 
+if (loading) {
+  return (
+    <div className="p-8 text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+      <p className="mt-4 text-gray-600">Loading patient data...</p>
+    </div>
+  );
+}
+
+if (error) {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold text-red-600">Error</h1>
+      <p className="mt-2 text-gray-600">{error}</p>
+      <button 
+        onClick={() => window.location.reload()}
+        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      >
+        Try Again
+      </button>
+    </div>
+  );
+}
+
+if (!patient) {
+  return (
+    <div className="p-8 text-center">
+      <h1 className="text-2xl font-bold text-red-600">Patient Not Found</h1>
+      <p className="mt-2 text-gray-600">No patient found with ID: {params.patient_id}</p>
+    </div>
+  );
+}
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -216,7 +337,7 @@ const saveAllTests = () => {
             <img src="/avatar.png" alt="Avatar" className="w-full h-full object-cover" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Harker, Megan</h2>
+            <h2 className="text-2xl font-bold text-gray-800">{patient.basic_details.first_name}</h2>
             <div className="flex flex-wrap items-center gap-4 mt-2 text-gray-600">
               <span className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-blue-500" />
