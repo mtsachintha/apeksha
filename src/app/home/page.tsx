@@ -17,6 +17,7 @@ interface PatientData {
     notes: string;
   };
   patient_id: string;
+  status: string;
   medical_history: {
     smoking: string;
     alcohol: string;
@@ -318,7 +319,8 @@ export default function Home() {
                 <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
                   Reset Filters
                 </button>
-              </div>              </div>
+              </div>              
+              </div>
           </div>
         )}
 
@@ -364,13 +366,11 @@ export default function Home() {
                         </span>
                       </p>
                       <p className="text-xs text-gray-700">
-                        Status: <span className={`font-semibold ${patient.complications_and_risks.some(c => c.severity === 'High')
+                        Status: <span className={`font-semibold ${patient.status === 'Discharged'
                             ? 'text-red-600'
                             : 'text-green-600'
                           }`}>
-                          {patient.complications_and_risks.some(c => c.severity === 'High')
-                            ? 'Critical'
-                            : 'Stable'}
+                          {patient.status}
                         </span>
                       </p>
                       {patient.basic_details.notes && (

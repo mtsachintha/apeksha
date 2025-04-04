@@ -14,6 +14,7 @@ const PatientSchema = new mongoose.Schema({
     notes: String,
   },
   patient_id: { type: String, required: true, unique: true },
+  status: { type: String },
   medical_history: {
     smoking: String,
     alcohol: String,
