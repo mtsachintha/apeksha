@@ -1,30 +1,56 @@
 import mongoose from 'mongoose';
 
-const dbConnect = async () => {
-  try {
-    const uri = process.env.MONGODB_URI;  // Get the MongoDB URI from environment variable
-    const dbName = process.env.MONGODB_DB;  // Get the DB name from environment variable
-    
-    if (!uri || !dbName) {
-      throw new Error("MongoDB URI or DB name not provided in environment variables.");
-    }
+// Connection caching
+let cached = global.mongoose;
 
-    if (mongoose.connections[0].readyState) {
-      console.log("Already connected to the database");
-      return;
-    }
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
-    // Connect to MongoDB using the URI and DB name from environment variables
-    await mongoose.connect(uri + dbName, {
+async function dbConnect() {
+  // Check for required environment variables
+  const MONGODB_URI = process.env.MONGODB_URI;
+  const MONGODB_DB = process.env.MONGODB_DB;
+
+  if (!MONGODB_URI) {
+    throw new Error('Please define MONGODB_URI environment variable');
+  }
+  if (!MONGODB_DB) {
+    throw new Error('Please define MONGODB_DB environment variable');
+  }
+
+  // If already connected in cached connection
+  if (cached.conn) {
+    console.log('Using existing database connection');
+    return cached.conn;
+  }
+
+  // If no connection promise exists, create one
+  if (!cached.promise) {
+    const opts = {
+      dbName: MONGODB_DB,
       useNewUrlParser: true,
       useUnifiedTopology: true,
-    });
+    };
 
-    console.log(`Connected to the ${dbName} database`);
-  } catch (error) {
-    console.error("Database connection error:", error);
-    process.exit(1);
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then(mongoose => {
+      console.log(`Connected to ${MONGODB_DB} database`);
+      return mongoose;
+    }).catch(err => {
+      console.error('Database connection failed:', err);
+      throw err;
+    });
   }
-};
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    // Reset cached promise on error to allow retries
+    cached.promise = null;
+    throw err;
+  }
+
+  return cached.conn;
+}
 
 export default dbConnect;
