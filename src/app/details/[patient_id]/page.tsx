@@ -22,6 +22,8 @@ interface Patient {
     email: string;
     address: string;
     notes: string;
+    city: string;
+    blood: string;
   };
   patient_id: string;
   status: string;
@@ -66,21 +68,68 @@ interface Patient {
 }
 
 const DetailsPage = () => {
-  
+
   const params = useParams();
-  const [patient, setPatient] = useState<Patient | null>(null);
+  const [patient, setPatient] = useState<Patient>({
+    _id: '',
+    patient_id: '',
+    status: '',
+    basic_details: {
+      title: '',
+      first_name: '',
+      last_name: '',
+      gender: '',
+      birthday: '',
+      ward: '',
+      phone: '',
+      email: '',
+      address: '',
+      notes: '',
+      city: '',
+      blood: '',
+    },
+    medical_history: {
+      smoking: '',
+      alcohol: '',
+      chronic_illness: [],
+      allergies: [],
+      previous_surgeries: [],
+    },
+    family_background: [],
+    vitals: [],
+    primary_diagnosis: {
+      cancer_type: '',
+      sub_category: '',
+      stage: '',
+      date_assessed: '',
+      findings: '',
+      suspicious_lumps: '',
+      pain_assessment: '',
+      consulting_doctor: '',
+      notes: '',
+    },
+    lab_results: {
+      blood_tests: [],
+      imaging_studies: [],
+      other_investigations: [],
+    },
+    medications: [],
+    surgeries: [],
+    patient_log: [],
+    complications_and_risks: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPatient = async () => {
       try {
-        const res = await fetch(`/api/patients/${params.patient_id}`, { 
-          cache: 'no-store' 
+        const res = await fetch(`/api/patients/${params.patient_id}`, {
+          cache: 'no-store'
         });
-        
+
         if (!res.ok) throw new Error("Failed to fetch patient data");
-        
+
         const { data } = await res.json();
         setPatient(data);
       } catch (err) {
@@ -222,109 +271,134 @@ const DetailsPage = () => {
     // Add your update logic here
   };
 
-// Blood Tests
-const [bloodTests, setBloodTests] = useState([{ name: "", result: "" }]);
+  // Blood Tests
+  const [bloodTests, setBloodTests] = useState([{ name: "", result: "" }]);
 
-const addBloodTest = () => {
-  setBloodTests([...bloodTests, { name: "", result: "" }]);
-};
+  const addBloodTest = () => {
+    setBloodTests([...bloodTests, { name: "", result: "" }]);
+  };
 
-const removeBloodTest = (index: number) => {
-  setBloodTests(bloodTests.filter((_, i) => i !== index));
-};
+  const removeBloodTest = (index: number) => {
+    setBloodTests(bloodTests.filter((_, i) => i !== index));
+  };
 
-const updateBloodTest = (index: number, field: "name" | "result", value: string) => {
-  setBloodTests(
-    bloodTests.map((test, i) => (i === index ? { ...test, [field]: value } : test))
-  );
-};
+  const updateBloodTest = (index: number, field: "name" | "result", value: string) => {
+    setBloodTests(
+      bloodTests.map((test, i) => (i === index ? { ...test, [field]: value } : test))
+    );
+  };
 
-// Imaging Studies
-const [imagingStudies, setImagingStudies] = useState([{ name: "", result: "" }]);
+  // Imaging Studies
+  const [imagingStudies, setImagingStudies] = useState([{ name: "", result: "" }]);
 
-const addImagingStudy = () => {
-  setImagingStudies([...imagingStudies, { name: "", result: "" }]);
-};
+  const addImagingStudy = () => {
+    setImagingStudies([...imagingStudies, { name: "", result: "" }]);
+  };
 
-const removeImagingStudy = (index: number) => {
-  setImagingStudies(imagingStudies.filter((_, i) => i !== index));
-};
+  const removeImagingStudy = (index: number) => {
+    setImagingStudies(imagingStudies.filter((_, i) => i !== index));
+  };
 
-const updateImagingStudy = (index: number, field: "name" | "result", value: string) => {
-  setImagingStudies(
-    imagingStudies.map((study, i) => (i === index ? { ...study, [field]: value } : study))
-  );
-};
+  const updateImagingStudy = (index: number, field: "name" | "result", value: string) => {
+    setImagingStudies(
+      imagingStudies.map((study, i) => (i === index ? { ...study, [field]: value } : study))
+    );
+  };
 
-// Other Investigations
-const [otherInvestigations, setOtherInvestigations] = useState([{ name: "", result: "" }]);
+  // Other Investigations
+  const [otherInvestigations, setOtherInvestigations] = useState([{ name: "", result: "" }]);
 
-const addInvestigation = () => {
-  setOtherInvestigations([...otherInvestigations, { name: "", result: "" }]);
-};
+  const addInvestigation = () => {
+    setOtherInvestigations([...otherInvestigations, { name: "", result: "" }]);
+  };
 
-const removeInvestigation = (index: number) => {
-  setOtherInvestigations(otherInvestigations.filter((_, i) => i !== index));
-};
+  const removeInvestigation = (index: number) => {
+    setOtherInvestigations(otherInvestigations.filter((_, i) => i !== index));
+  };
 
-const updateInvestigation = (index: number, field: "name" | "result", value: string) => {
-  setOtherInvestigations(
-    otherInvestigations.map((investigation, i) =>
-      i === index ? { ...investigation, [field]: value } : investigation
-    )
-  );
-};
+  const updateInvestigation = (index: number, field: "name" | "result", value: string) => {
+    setOtherInvestigations(
+      otherInvestigations.map((investigation, i) =>
+        i === index ? { ...investigation, [field]: value } : investigation
+      )
+    );
+  };
+
+  const cancerTypes = ["Breast Cancer", "Lung Cancer", "Prostate Cancer"];
+  const stages = ["Stage I", "Stage II", "Stage III", "Stage IV"];
+  const subStages = ["A", "B", "C", "D"];
+  const [selectedCancerType, setSelectedCancerType] = useState("");
+  const [selectedStage, setSelectedStage] = useState("");
+  const [selectedSubStage, setSelectedSubStage] = useState("");
+
+  const saveAllTests = () => {
+    // Empty function
+  };
+
+  useEffect(() => {
+    if (patient) {
+      setChronicIllnesses(patient.medical_history.chronic_illness || [""]);
+      setAllergies(patient.medical_history.allergies || [""]);
+      setPreviousSurgeries(patient.medical_history.previous_surgeries || [""]);
+    }
+  }, [patient]);
+
+  useEffect(() => {
+    if (patient?.family_background) {
+      const mapped = patient.family_background.map((item: any) => ({
+        condition: item.disease,
+        relation: item.relation,
+      }));
+      setFamilyHistory(mapped.length > 0 ? mapped : [{ condition: "", relation: "" }]);
+    }
+  }, [patient]);
 
 
-const saveAllTests = () => {
-  // Empty function
-};
+  if (loading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading patient data...</p>
+      </div>
+    );
+  }
 
-if (loading) {
-  return (
-    <div className="p-8 text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-      <p className="mt-4 text-gray-600">Loading patient data...</p>
-    </div>
-  );
-}
+  if (error) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-red-600">Error</h1>
+        <p className="mt-2 text-gray-600">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
-if (error) {
-  return (
-    <div className="p-8 text-center">
-      <h1 className="text-2xl font-bold text-red-600">Error</h1>
-      <p className="mt-2 text-gray-600">{error}</p>
-      <button 
-        onClick={() => window.location.reload()}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Try Again
-      </button>
-    </div>
-  );
-}
-
-if (!patient) {
-  return (
-    <div className="p-8 text-center">
-      <h1 className="text-2xl font-bold text-red-600">Patient Not Found</h1>
-      <p className="mt-2 text-gray-600">No patient found with ID: {params.patient_id}</p>
-    </div>
-  );
-}
+  if (!patient) {
+    return (
+      <div className="p-8 text-center">
+        <h1 className="text-2xl font-bold text-red-600">Patient Not Found</h1>
+        <p className="mt-2 text-gray-600">No patient found with ID: {params.patient_id}</p>
+      </div>
+    );
+  }
 
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
       {/* ✅ Header */}
-      <header className="bg-gradient-to-r from-gray-800 to-blue-400 text-white px-6 py-4 flex justify-between items-center shadow-xl">
+      <header className="bg-gradient-to-r from-blue-100 to-blue-300 text-white px-6 py-4 flex justify-between items-center shadow-xl">
         <img
           src="/logo_main.png"
           alt="Logo"
           className="h-12 transition-all hover:scale-105 hover:rotate-2 duration-300"
         />
-        <div className="flex items-center space-x-4 bg-blue-900/30 px-4 py-2 rounded-full">
+        <div className="flex items-center space-x-4 bg-blue-800 px-4 py-2 rounded-full">
           <FaUserMd className="text-xl" />
           <span className="text-md font-semibold">Dr. John Doe</span>
         </div>
@@ -405,28 +479,29 @@ if (!patient) {
               {/* Patient Data */}
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Patient Data</h2>
-                <p><strong>Name:</strong> Lola Greenwood</p>
-                <p><strong>Patient ID:</strong> PID009384</p>
-                <p><strong>Blood Group:</strong> A+</p>
-                <p><strong>Phone:</strong> (808) 555-0111</p>
-                <p><strong>Email:</strong> nvt.isst.nute@gmail.com</p>
+                <p><strong>Name:</strong> {patient.basic_details.first_name} {patient.basic_details.last_name}</p>
+                <p><strong>Patient ID:</strong> {patient.patient_id}</p>
+                <p><strong>Blood Group:</strong> {patient.basic_details.blood}</p>
+                <p><strong>Phone:</strong> {patient.basic_details.phone}</p>
+                <p><strong>Email:</strong> {patient.basic_details.email}</p>
               </div>
 
               {/* Last Vitals */}
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Last Vitals</h2>
-                <p><strong>Weight:</strong> 77 kg</p>
-                <p><strong>Height:</strong> 170 cm</p>
-                <p><strong>Blood Pressure:</strong> 120/70</p>
-                <p><strong>Pulse:</strong> 60</p>
+                <p><strong>Weight:</strong> {patient.vitals[0].weight} Kg</p>
+                <p><strong>Height:</strong> {patient.vitals[0].height} cm</p>
+                <p><strong>Blood Pressure:</strong> {patient.vitals[0].blood_pressure}</p>
+                <p><strong>Pulse:</strong> {patient.vitals[0].pulse}</p>
               </div>
 
               {/* Major Problems */}
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Primary Diagnosis</h2>
-                <p><strong>Gastritis:</strong> 2021-05-15</p>
-                <p><strong>Angina:</strong> 2021-05-10</p>
-                <p><strong>Headaches:</strong> 2021-03-10</p>
+                <p><strong>Cancer Type:</strong> {patient.primary_diagnosis.cancer_type}</p>
+                <p><strong>Stage:</strong> {patient.primary_diagnosis.stage}</p>
+                <p><strong>Date Assessed:</strong> {new Date(patient.primary_diagnosis.date_assessed).toLocaleDateString()}</p>
+                <p><strong>Consulting Doctor:</strong> {patient.primary_diagnosis.consulting_doctor}</p>
               </div>
             </div>
 
@@ -434,25 +509,41 @@ if (!patient) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Lab Results</h2>
-                <p><strong>WBC:</strong> 72 K/pl (5.7-16.10)</p>
-                <p><strong>NEU:</strong> 24.45 K/pl (3-11.5)</p>
-                <p><strong>LYM:</strong> 6 K/pl (5.7-16.7)</p>
+                {patient.lab_results?.blood_tests?.[0] && (
+                  <p><strong>Blood:</strong> {patient.lab_results.blood_tests[0]}</p>
+                )}
+                {patient.lab_results?.imaging_studies?.[0] && (
+                  <p><strong>Imaging:</strong> {patient.lab_results.imaging_studies[0]}</p>
+                )}
+                {patient.lab_results?.other_investigations?.[0] && (
+                  <p><strong>Other:</strong> {patient.lab_results.other_investigations[0]}</p>
+                )}
+
               </div>
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Chronic Medication</h2>
-                <p><strong>Aspirin:</strong> 2021-05-15</p>
-                <p><strong>Nuorfen:</strong> 2021-05-10</p>
-                <p><strong>Paracetamol:</strong> 2021-03-10</p>
+                {patient.medications?.slice(0, 3).map((med, index) => (
+                  <p key={index}><strong>{med.name}:</strong> {med.dosage}</p>
+                ))}
+
               </div>
             </div>
 
             {/* Last Visit */}
             <div className="bg-white p-4 rounded-lg shadow mt-4 text-gray-500">
-              <h2 className="font-semibold text-gray-700">Last Observation</h2>
-              <p><strong>Reason:</strong> Candidiasis can be a pesky infection</p>
-              <p><strong>Diagnosis:</strong> Antifungals may cause side effects</p>
-              <p><strong>Medication:</strong> Paracetamol Strength, 10% Coverage</p>
-              <p><strong>Other:</strong> Vecectomy Sergary</p>
+              <h2 className="font-semibold text-gray-700">Patient Log</h2>
+              {patient.patient_log.slice(0, 4).map(log => {
+                const date = new Date(log.date);
+                const formattedDate = date.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                });
+                return (
+                  <p><strong>{formattedDate} - </strong> {log.note}</p>
+                );
+              })}
+
+
             </div>
 
             {/* Export Button */}
@@ -526,10 +617,23 @@ if (!patient) {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                          <select className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option>Mrs</option>
-                            <option>Mr</option>
-                            <option>Ms</option>
+                          <select
+                            className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={patient.basic_details.title}
+                            onChange={(e) =>
+                              setPatient((prev) => ({
+                                ...prev,
+                                basic_details: {
+                                  ...prev.basic_details,
+                                  title: e.target.value,
+                                },
+                              }))
+                            }
+                          >
+                            <option value="">None</option>
+                            <option value="Mrs">Mrs.</option>
+                            <option value="Mr">Mr.</option>
+                            <option value="Ms">Ms.</option>
                           </select>
                         </div>
 
@@ -537,9 +641,21 @@ if (!patient) {
                           <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
                           <input
                             type="text"
-                            value="Megan"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-50"
-                            readOnly
+                            value={patient.basic_details.first_name}
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    basic_details: {
+                                      ...prev.basic_details,
+                                      first_name: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
+                            className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 bg-white"
                           />
                         </div>
 
@@ -547,11 +663,26 @@ if (!patient) {
                           <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
                           <input
                             type="date"
-                            value="1988-12-29"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-50"
-                            readOnly
+                            value={patient?.basic_details.birthday
+                              ? patient.basic_details.birthday.split('T')[0]  // Extract YYYY-MM-DD
+                              : ''}
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    basic_details: {
+                                      ...prev.basic_details,
+                                      birthday: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
+                            className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 bg-white"
                           />
                         </div>
+
                       </div>
 
                       <div className="space-y-4">
@@ -559,54 +690,152 @@ if (!patient) {
                           <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
                           <input
                             type="text"
-                            value="Harker"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-50"
-                            readOnly
+                            value={patient.basic_details.last_name}
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    basic_details: {
+                                      ...prev.basic_details,
+                                      last_name: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
+                            className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2 bg-white"
                           />
                         </div>
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Gender</label>
-                          <select className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option>Male</option>
-                            <option>Female</option>
+                          <select
+                            className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={patient?.basic_details.gender || ''}
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    basic_details: {
+                                      ...prev.basic_details,
+                                      gender: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
+                          >
+                            <option value="">Other</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                           </select>
                         </div>
+
 
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Contact No</label>
                           <input
                             type="text"
-                            value="The Sun"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-50"
-                            readOnly
+                            value={patient?.basic_details.phone || ''}
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    basic_details: {
+                                      ...prev.basic_details,
+                                      phone: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
+                            className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2 bg-white"
                           />
                         </div>
+
                       </div>
                     </div>
 
                     <div className="mt-6">
                       <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                      <textarea
+                      <input
                         placeholder="Enter Address"
-                        className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        rows={3}
+                        type="text"
+                        value={patient?.basic_details.address || ''}
+                        onChange={(e) =>
+                          setPatient((prev) =>
+                            prev
+                              ? {
+                                ...prev,
+                                basic_details: {
+                                  ...prev.basic_details,
+                                  address: e.target.value,
+                                },
+                              }
+                              : prev
+                          )
+                        }
+                        className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2 bg-white"
+                      />
+
+                      <label className="block text-sm font-medium text-gray-700 mb-1 mt-2">City</label>
+                      <input
+                        placeholder="City"
+                        type="text"
+                        value={patient?.basic_details.city || ''}
+                        onChange={(e) =>
+                          setPatient((prev) =>
+                            prev
+                              ? {
+                                ...prev,
+                                basic_details: {
+                                  ...prev.basic_details,
+                                  city: e.target.value,
+                                },
+                              }
+                              : prev
+                          )
+                        }
+                        className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2 bg-white"
                       />
                     </div>
 
                     <div className="mt-6">
                       <h3 className="text-l font-semibold text-gray-800 mb-4 flex items-center gap-2">
                         <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
                         </svg>
                         Notes
                       </h3>
                       <textarea
                         placeholder="Enter Notes"
-                        className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         rows={3}
+                        value={patient?.basic_details.notes || ''}
+                        onChange={(e) =>
+                          setPatient((prev) =>
+                            prev
+                              ? {
+                                ...prev,
+                                basic_details: {
+                                  ...prev.basic_details,
+                                  notes: e.target.value,
+                                },
+                              }
+                              : prev
+                          )
+                        }
                       />
                     </div>
+
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
                     <div className="flex justify-end space-x-2 mt-4">
@@ -638,17 +867,36 @@ if (!patient) {
                         <fieldset className="space-y-3">
                           <legend className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
+                              />
                             </svg>
                             Smoking
                           </legend>
                           <div className="space-y-2">
-                            {['Non Smoker', 'Ex Smoker', 'Smoker'].map(option => (
+                            {['Non Smoker', 'Ex Smoker', 'Smoker'].map((option) => (
                               <label key={option} className="flex items-center space-x-3 text-gray-700">
                                 <input
                                   type="radio"
                                   name="smoking"
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                  checked={patient?.medical_history.smoking === option}
+                                  onChange={() =>
+                                    setPatient((prev) =>
+                                      prev
+                                        ? {
+                                          ...prev,
+                                          medical_history: {
+                                            ...prev.medical_history,
+                                            smoking: option,
+                                          },
+                                        }
+                                        : prev
+                                    )
+                                  }
                                 />
                                 <span>{option}</span>
                               </label>
@@ -661,17 +909,36 @@ if (!patient) {
                         <fieldset className="space-y-3">
                           <legend className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                             <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                              />
                             </svg>
                             Alcohol
                           </legend>
                           <div className="space-y-2">
-                            {['Non Drinker', 'Ex Drinker', 'Drinker'].map(option => (
+                            {['Non Drinker', 'Ex Drinker', 'Drinker'].map((option) => (
                               <label key={option} className="flex items-center space-x-3 text-gray-700">
                                 <input
                                   type="radio"
                                   name="alcohol"
                                   className="h-4 w-4 text-blue-600 focus:ring-blue-500"
+                                  checked={patient?.medical_history.alcohol === option}
+                                  onChange={() =>
+                                    setPatient((prev) =>
+                                      prev
+                                        ? {
+                                          ...prev,
+                                          medical_history: {
+                                            ...prev.medical_history,
+                                            alcohol: option,
+                                          },
+                                        }
+                                        : prev
+                                    )
+                                  }
                                 />
                                 <span>{option}</span>
                               </label>
@@ -681,7 +948,9 @@ if (!patient) {
                       </div>
                     </div>
 
+
                     <div className="mt-8 space-y-6">
+                      {/* Chronic Illnesses */}
                       <div>
                         <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -701,7 +970,7 @@ if (!patient) {
                                 newIllnesses[index] = e.target.value;
                                 setChronicIllnesses(newIllnesses);
                               }}
-                              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                             {chronicIllnesses.length > 1 && (
                               <button
@@ -714,7 +983,6 @@ if (!patient) {
                           </div>
                         ))}
 
-                        {/* Buttons aligned to the right */}
                         <div className="flex justify-end space-x-2 mt-4">
                           <button
                             onClick={addIllness}
@@ -734,6 +1002,7 @@ if (!patient) {
                         </div>
                       </div>
 
+                      {/* Allergies */}
                       <div>
                         <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -741,52 +1010,51 @@ if (!patient) {
                           </svg>
                           Allergies
                         </h4>
-                        <div>
 
-                          {previousSurgeries.map((surgery, index) => (
-                            <div key={index} className="flex items-center space-x-2 mb-2">
-                              <input
-                                type="text"
-                                placeholder="Enter previous surgery"
-                                value={surgery}
-                                onChange={(e) => {
-                                  const newSurgeries = [...previousSurgeries];
-                                  newSurgeries[index] = e.target.value;
-                                  setPreviousSurgeries(newSurgeries);
-                                }}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              />
-                              {previousSurgeries.length > 1 && (
-                                <button
-                                  onClick={() => removeSurgery(index)}
-                                  className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                                >
-                                  <Trash size={18} />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-
-                          <div className="flex justify-end space-x-2 mt-4">
-                            <button
-                              onClick={addSurgery}
-                              className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                            >
-                              <PlusCircle size={20} className="mr-2" />
-                              Add More
-                            </button>
-
-                            <button
-                              onClick={updateSurgeries}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
+                        {allergies.map((allergy, index) => (
+                          <div key={index} className="flex items-center space-x-2 mb-2">
+                            <input
+                              type="text"
+                              placeholder="Enter allergy"
+                              value={allergy}
+                              onChange={(e) => {
+                                const newAllergies = [...allergies];
+                                newAllergies[index] = e.target.value;
+                                setAllergies(newAllergies);
+                              }}
+                              className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {allergies.length > 1 && (
+                              <button
+                                onClick={() => removeAllergy(index)}
+                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                              >
+                                <Trash size={18} />
+                              </button>
+                            )}
                           </div>
+                        ))}
+
+                        <div className="flex justify-end space-x-2 mt-4">
+                          <button
+                            onClick={addAllergy}
+                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                          >
+                            <PlusCircle size={20} className="mr-2" />
+                            Add More
+                          </button>
+
+                          <button
+                            onClick={updateAllergies}
+                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                          >
+                            <Save size={20} className="mr-2" />
+                            Update
+                          </button>
                         </div>
                       </div>
 
+                      {/* Previous Surgeries */}
                       <div>
                         <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
                           <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -794,6 +1062,7 @@ if (!patient) {
                           </svg>
                           Previous Surgeries
                         </h4>
+
                         {previousSurgeries.map((surgery, index) => (
                           <div key={index} className="flex items-center space-x-2 mb-2">
                             <input
@@ -805,7 +1074,7 @@ if (!patient) {
                                 newSurgeries[index] = e.target.value;
                                 setPreviousSurgeries(newSurgeries);
                               }}
-                              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                             {previousSurgeries.length > 1 && (
                               <button
@@ -835,9 +1104,9 @@ if (!patient) {
                             Update
                           </button>
                         </div>
-
                       </div>
                     </div>
+
                     {/* Horizontal Divider */}
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
@@ -891,7 +1160,7 @@ if (!patient) {
                                     newHistory[index].condition = e.target.value;
                                     setFamilyHistory(newHistory);
                                   }}
-                                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -905,7 +1174,7 @@ if (!patient) {
                                       newHistory[index].relation = e.target.value;
                                       setFamilyHistory(newHistory);
                                     }}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                   />
                                   {familyHistory.length > 1 && (
                                     <button
@@ -917,17 +1186,17 @@ if (!patient) {
                                   )}
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"></td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
 
+
                     <div className="mt-4">
                       <div className="flex justify-end space-x-2 mt-4">
                         <button
-                          onClick={addSurgery}
+                          onClick={addFamilyRecord}
                           className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
                         >
                           <PlusCircle size={20} className="mr-2" />
@@ -998,42 +1267,91 @@ if (!patient) {
                     </h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Cancer Type</label>
-                        <select className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <option>Breast Cancer</option>
-                          <option>Lung Cancer</option>
-                          <option>Prostate Cancer</option>
-                        </select>
-                      </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category</label>
-                        <input
-                          type="text"
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-50"
-                          readOnly
-                        />
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Cancer Type</label>
+                        <select
+                          value={patient.primary_diagnosis.cancer_type || ''}
+                          onChange={(e) =>
+                            setPatient((prev) => ({
+                              ...prev,
+                              cancerType: e.target.value,
+                            }))
+                          }
+                          className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          {cancerTypes.map((type, index) => (
+                            <option key={index} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                        </select>
                       </div>
 
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Stage</label>
-                        <select className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <option>Stage I</option>
-                          <option>Stage II</option>
-                          <option>Stage III</option>
-                          <option>Stage IV</option>
+                        <select
+                          value={patient.primary_diagnosis.stage}
+                          onChange={(e) =>
+                            setPatient((prev) => ({
+                              ...prev,
+                              stage: e.target.value,
+                            }))
+                          }
+                          className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          {stages.map((option, index) => (
+                            <option key={index} value={option}>
+                              {option}
+                            </option>
+                          ))}
                         </select>
                       </div>
 
                       <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Sub Stage</label>
+                        <select
+                          value={patient.primary_diagnosis.sub_category}
+                          onChange={(e) =>
+                            setPatient((prev) => ({
+                              ...prev,
+                              primary_diagnosis: {
+                                ...prev.primary_diagnosis,
+                                sub_category: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          {subStages.map((option, index) => (
+                            <option key={index} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Date Assessed</label>
                         <input
                           type="date"
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-50"
-                          readOnly
+                          value={
+                            patient.primary_diagnosis.date_assessed
+                              ? patient.primary_diagnosis.date_assessed.split("T")[0]
+                              : ""
+                          }
+                          onChange={(e) =>
+                            setPatient((prev) => ({
+                              ...prev,
+                              primary_diagnosis: {
+                                ...prev.primary_diagnosis,
+                                date_assessed: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 bg-gray-50"
                         />
                       </div>
+
                     </div>
 
                     <div className="mt-6">
@@ -1121,190 +1439,190 @@ if (!patient) {
               {activeSubSection === "investigationsordered" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                  </svg>
-                  Blood Tests
-                </h4>
-                <div>
-                  {bloodTests.map((test, index) => (
-                    <div key={index} className="flex items-center space-x-2 mb-2">
-                      <input
-                        type="text"
-                        placeholder="Test Name"
-                        value={test.name}
-                        onChange={(e) => updateBloodTest(index, "name", e.target.value)}
-                        className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Result"
-                        value={test.result}
-                        onChange={(e) => updateBloodTest(index, "result", e.target.value)}
-                        className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                      {bloodTests.length > 1 && (
+                    <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                      </svg>
+                      Blood Tests
+                    </h4>
+                    <div>
+                      {bloodTests.map((test, index) => (
+                        <div key={index} className="flex items-center space-x-2 mb-2">
+                          <input
+                            type="text"
+                            placeholder="Test Name"
+                            value={test.name}
+                            onChange={(e) => updateBloodTest(index, "name", e.target.value)}
+                            className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Result"
+                            value={test.result}
+                            onChange={(e) => updateBloodTest(index, "result", e.target.value)}
+                            className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {bloodTests.length > 1 && (
+                            <button
+                              onClick={() => removeBloodTest(index)}
+                              className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                            >
+                              <Trash size={18} />
+                            </button>
+                          )}
+                        </div>
+                      ))}
+
+                      <div className="flex justify-end space-x-2 mt-4">
                         <button
-                          onClick={() => removeBloodTest(index)}
-                          className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                          onClick={addBloodTest}
+                          className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
                         >
-                          <Trash size={18} />
+                          <PlusCircle size={20} className="mr-2" />
+                          Add More
                         </button>
-                      )}
+
+                        <button
+                          onClick={() => updateBloodTest(bloodTests.length - 1, "name", "new value")}
+                          className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        >
+                          <Save size={20} className="mr-2" />
+                          Update
+                        </button>
+                      </div>
                     </div>
-                  ))}
-              
-                  <div className="flex justify-end space-x-2 mt-4">
-                    <button
-                      onClick={addBloodTest}
-                      className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                    >
-                      <PlusCircle size={20} className="mr-2" />
-                      Add More
-                    </button>
-              
-                    <button
-  onClick={() => updateBloodTest(bloodTests.length - 1, "name", "new value")}
-  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                    >
-                      <Save size={20} className="mr-2" />
-                      Update
-                    </button>
+                    <div>
+                      <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                        </svg>
+                        Imaging Studies
+                      </h4>
+                      <div>
+                        {imagingStudies.map((study, index) => (
+                          <div key={index} className="flex items-center space-x-2 mb-2">
+                            <input
+                              type="text"
+                              placeholder="Study Name"
+                              value={study.name}
+                              onChange={(e) => updateImagingStudy(imagingStudies.length - 1, "name", e.target.value)}
+                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Result"
+                              value={study.result}
+                              onChange={(e) => updateImagingStudy(index, "result", e.target.value)}
+                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {imagingStudies.length > 1 && (
+                              <button
+                                onClick={() => removeImagingStudy(index)}
+                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                              >
+                                <Trash size={18} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+
+                        <div className="flex justify-end space-x-2 mt-4">
+                          <button
+                            onClick={addImagingStudy}
+                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                          >
+                            <PlusCircle size={20} className="mr-2" />
+                            Add More
+                          </button>
+
+                          <button
+                            onClick={() => updateImagingStudy(imagingStudies.length - 1, "name", "new value")}
+                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                          >
+                            <Save size={20} className="mr-2" />
+                            Update
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
+                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                        Other Investigations
+                      </h4>
+                      <div>
+                        {otherInvestigations.map((investigation, index) => (
+                          <div key={index} className="flex items-center space-x-2 mb-2">
+                            <input
+                              type="text"
+                              placeholder="Investigation Name"
+                              value={investigation.name}
+                              onChange={(e) => updateInvestigation(index, "name", e.target.value)}
+                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Result"
+                              value={investigation.result}
+                              onChange={(e) => updateInvestigation(index, "result", e.target.value)}
+                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
+                            {otherInvestigations.length > 1 && (
+                              <button
+                                onClick={() => removeInvestigation(index)}
+                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                              >
+                                <Trash size={18} />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+
+                        <div className="flex justify-end space-x-2 mt-4">
+                          <button
+                            onClick={addInvestigation}
+                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                          >
+                            <PlusCircle size={20} className="mr-2" />
+                            Add More
+                          </button>
+
+                          <button
+                            onClick={() => updateInvestigation(imagingStudies.length - 1, "name", "new value")}
+                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                          >
+                            <Save size={20} className="mr-2" />
+                            Update
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-                <div>
-  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-    </svg>
-    Imaging Studies
-  </h4>
-  <div>
-    {imagingStudies.map((study, index) => (
-      <div key={index} className="flex items-center space-x-2 mb-2">
-        <input
-          type="text"
-          placeholder="Study Name"
-          value={study.name}
-          onChange={(e) => updateImagingStudy(imagingStudies.length -1, "name", e.target.value)}
-          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <input
-          type="text"
-          placeholder="Result"
-          value={study.result}
-          onChange={(e) => updateImagingStudy(index, "result", e.target.value)}
-          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        {imagingStudies.length > 1 && (
-          <button
-            onClick={() => removeImagingStudy(index)}
-            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-          >
-            <Trash size={18} />
-          </button>
-        )}
-      </div>
-    ))}
-
-    <div className="flex justify-end space-x-2 mt-4">
-      <button
-        onClick={addImagingStudy}
-        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-      >
-        <PlusCircle size={20} className="mr-2" />
-        Add More
-      </button>
-
-      <button
-  onClick={() => updateImagingStudy(imagingStudies.length - 1, "name", "new value")}
-  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-      >
-        <Save size={20} className="mr-2" />
-        Update
-      </button>
-    </div>
-  </div>
-</div>
-
-<div>
-  <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-    <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-    </svg>
-    Other Investigations
-  </h4>
-  <div>
-    {otherInvestigations.map((investigation, index) => (
-      <div key={index} className="flex items-center space-x-2 mb-2">
-        <input
-          type="text"
-          placeholder="Investigation Name"
-          value={investigation.name}
-          onChange={(e) => updateInvestigation(index, "name", e.target.value)}
-          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        <input
-          type="text"
-          placeholder="Result"
-          value={investigation.result}
-          onChange={(e) => updateInvestigation(index, "result", e.target.value)}
-          className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        />
-        {otherInvestigations.length > 1 && (
-          <button
-            onClick={() => removeInvestigation(index)}
-            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-          >
-            <Trash size={18} />
-          </button>
-        )}
-      </div>
-    ))}
-
-    <div className="flex justify-end space-x-2 mt-4">
-      <button
-        onClick={addInvestigation}
-        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-      >
-        <PlusCircle size={20} className="mr-2" />
-        Add More
-      </button>
-
-      <button
-  onClick={() => updateInvestigation(imagingStudies.length - 1, "name", "new value")}
-  className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-      >
-        <Save size={20} className="mr-2" />
-        Update
-      </button>
-    </div>
-  </div>
-</div>
-
-              </div>
-              </div>
               )}
 
               {/* Observations Section */}
               {activeSubSection === "vitalsigns" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                  <div className="flex justify-between items-center mb-6">
-    <h3 className="text-l font-semibold text-gray-800 flex items-center gap-2">
-      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 3 0 016 0z" />
-      </svg>
-      Observations
-    </h3>
-    <select className="border border-gray-300 rounded px-3 py-1 text-gray-700">
-      <option>Select Date</option>
-      <option>2025-03-30</option>
-      <option>2025-03-29</option>
-      <option>2025-03-28</option>
-    </select>
-  </div>
+                    <div className="flex justify-between items-center mb-6">
+                      <h3 className="text-l font-semibold text-gray-800 flex items-center gap-2">
+                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 3 0 016 0z" />
+                        </svg>
+                        Observations
+                      </h3>
+                      <select className="border border-gray-300 rounded px-3 py-1 text-gray-700">
+                        <option>Select Date</option>
+                        <option>2025-03-30</option>
+                        <option>2025-03-29</option>
+                        <option>2025-03-28</option>
+                      </select>
+                    </div>
 
                     <div className="space-y-6">
                       <div>

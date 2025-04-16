@@ -16,6 +16,9 @@ interface PatientData {
     email: string;
     address: string;
     notes: string;
+    city: string;
+    blood: string;
+
   };
   patient_id: string;
   status: string;
@@ -131,14 +134,14 @@ export default function Home() {
   return (
     <div className="flex h-screen flex-col bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-gray-800 to-blue-400 text-white px-6 py-4 flex justify-between items-center shadow-xl">
+      <header className="bg-gradient-to-r from-blue-100 to-blue-300 text-white px-6 py-4 flex justify-between items-center shadow-xl">
         <img
           src="/logo_main.png"
           alt="Logo"
           className="h-12 hover:scale-105 cursor-pointer"
         />
-        <div className="flex items-center space-x-4 bg-blue-900/30 px-4 py-2 rounded-full">
-          <FaUserMd className="text-xl" />
+        <div className="flex items-center space-x-4 bg-blue-800 px-4 py-2 rounded-full">
+        <FaUserMd className="text-xl" />
           <span className="text-md font-semibold">Dr. John Doe</span>
         </div>
       </header>
