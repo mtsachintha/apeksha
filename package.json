@@ -19,7 +19,8 @@
     "next-auth": "^4.24.11",
     "react": "latest",
     "react-dom": "latest",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "use-debounce": "^10.0.4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

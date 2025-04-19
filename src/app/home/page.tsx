@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { SetStateAction, useState, useEffect } from "react";
 import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes } from "react-icons/fa";
+import { useCallback } from "react";
+import { useDebounce } from "use-debounce";
 
 interface PatientData {
   _id: string;
@@ -117,9 +119,97 @@ export default function Home() {
   // Calculate paginated patients
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentPatients = patients.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(patients.length / itemsPerPage);
   const paginationRange = getPaginationRange(patients.length, currentPage);
+
+  const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+
+  const currentPatients = filteredPatients.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+
+  const filterPatients = useCallback(() => {
+    if (!debouncedSearchQuery) {
+      setFilteredPatients(patients);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const filtered = patients.filter(patient => {
+      // Search by name
+      if (searchType === "name") {
+        const fullName = `${patient.basic_details.first_name} ${patient.basic_details.last_name}`.toLowerCase();
+        return fullName.includes(debouncedSearchQuery.toLowerCase());
+      }
+
+      // Search by ward
+      if (searchType === "wardNo") {
+        return patient.basic_details.ward.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      }
+
+      // Simulate async search (remove timeout in real implementation)
+      const timer = setTimeout(() => {
+        const filtered = patients.filter(patient => {
+          // ... existing filter logic ...
+        });
+
+        setFilteredPatients(filtered);
+        setIsSearching(false);
+      }, 200);
+
+      return () => clearTimeout(timer);
+
+      return true;
+    });
+
+    setFilteredPatients(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
+  }, [patients, debouncedSearchQuery, searchType]);
+
+  // Add these helper functions
+  const highlightMatch = (text: string, query: string) => {
+    if (!query) return text;
+
+    const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+    return text.replace(regex, '<span class="bg-yellow-200">$1</span>');
+  };
+
+  const escapeRegExp = (string: string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  // For React components, use this safe version:
+  const HighlightText = ({ text, query }: { text: string; query: string }) => {
+    if (!query) return <>{text}</>;
+
+    const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'gi'));
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <span key={i} className="bg-yellow-200">{part}</span>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </>
+    );
+  };
+
+  // Add this state
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    filterPatients();
+  }, [filterPatients]);
+
+  // Initialize filteredPatients when data loads
+  useEffect(() => {
+    if (patients.length) {
+      setFilteredPatients(patients);
+    }
+  }, [patients]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,6 +228,7 @@ export default function Home() {
 
     fetchData();
   }, []);
+
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -184,6 +275,11 @@ export default function Home() {
               onChange={handleSearchQueryChange}
             />
             <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
+            {isSearching && (
+              <div className="absolute right-3 top-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              </div>
+            )}
           </div>
 
           {/* Search Type Radio */}
@@ -278,6 +374,11 @@ export default function Home() {
                     onChange={handleSearchQueryChange}
                   />
                   <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
+                  {isSearching && (
+                    <div className="absolute right-3 top-4">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Search */}
@@ -349,6 +450,23 @@ export default function Home() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Scrollable Cards */}
           <div className="flex-1 overflow-y-auto p-3">
+            <div className="mb-4 px-2 text-sm text-gray-600">
+              {debouncedSearchQuery && (
+                <div className="flex items-center">
+                  <FaSearch className="mr-2" />
+                  Showing {filteredPatients.length} patients matching "{debouncedSearchQuery}"
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setFilteredPatients(patients);
+                    }}
+                    className="ml-4 text-blue-600 hover:text-blue-800 flex items-center"
+                  >
+                    <FaTimes className="mr-1" /> Clear
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {currentPatients.map((patient) => (
                 <div
@@ -361,7 +479,10 @@ export default function Home() {
                   <div className="flex flex-col flex-grow">
                     <div className="flex flex-col sm:flex-row items-start justify-between mb-2">
                       <span className="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        Ward No: {patient.basic_details.ward}
+                        Ward No: <HighlightText
+                          text={patient.basic_details.ward}
+                          query={searchType === 'wardNo' ? debouncedSearchQuery : ''}
+                        />
                       </span>
                       <div className="flex items-center text-xs text-gray-500 mt-1 sm:mt-0">
                         <FaClock className="mr-1" /> Last updated: {new Date().toLocaleDateString()}
@@ -369,7 +490,11 @@ export default function Home() {
                     </div>
 
                     <h4 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {patient.basic_details.title} {patient.basic_details.first_name} {patient.basic_details.last_name}
+                      {patient.basic_details.title}{' '}
+                      <HighlightText
+                        text={`${patient.basic_details.first_name} ${patient.basic_details.last_name}`}
+                        query={searchType === 'name' ? debouncedSearchQuery : ''}
+                      />
                     </h4>
 
                     <div className="flex-grow space-y-2 mb-3">
@@ -431,8 +556,8 @@ export default function Home() {
                 key={index}
                 onClick={() => typeof item === 'number' ? setCurrentPage(item) : null}
                 className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${item === currentPage
-                    ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   } ${typeof item !== 'number' ? 'cursor-default' : ''}`}
                 disabled={typeof item !== 'number'}
               >
