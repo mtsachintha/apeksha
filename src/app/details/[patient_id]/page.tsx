@@ -1,6 +1,5 @@
 "use client";
 
-import dbConnect from "../../utils/dbConnect";
 import Patient from "../../models/Patient";
 
 import { useParams } from 'next/navigation';

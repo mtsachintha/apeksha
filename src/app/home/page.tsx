@@ -41,7 +41,7 @@ interface PatientData {
       special_notes: string;
     };
   };
-  
+
   primary_diagnosis: {
     cancer_type: string;
     sub_category: string;
@@ -57,7 +57,7 @@ interface PatientData {
     blood_tests: { name: string; result: string }[];
     imaging_studies: { name: string; result: string }[];
     other_investigations: { name: string; result: string }[];
-  };  
+  };
   medications: { name: string; dosage: string; start_date: string; end_date: string }[];
   surgeries: { name: string; date: string; notes: string; complication: string }[];
   patient_log: { date: string; note: string }[];
@@ -92,6 +92,35 @@ export default function Home() {
     setSearchQuery(e.target.value);
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  const getPaginationRange = (totalItems: number, currentPage: number) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const maxVisiblePages = 4; // Show up to 4 pages before adding ellipsis
+
+    if (totalPages <= maxVisiblePages + 1) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    if (currentPage <= maxVisiblePages) {
+      return [...Array.from({ length: maxVisiblePages }, (_, i) => i + 1), '...', totalPages];
+    }
+
+    if (currentPage > totalPages - maxVisiblePages) {
+      return [1, '...', ...Array.from({ length: maxVisiblePages }, (_, i) => totalPages - maxVisiblePages + i + 1)];
+    }
+
+    return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+  };
+
+  // Calculate paginated patients
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentPatients = patients.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(patients.length / itemsPerPage);
+  const paginationRange = getPaginationRange(patients.length, currentPage);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -118,20 +147,6 @@ export default function Home() {
     return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   }
 
-  const wardList = [
-    { wardNo: "WRD0012", fullName: "Fredrik North De Silva", lastUpdated: "2 mins ago" },
-    { wardNo: "WRD0013", fullName: "Alice Johnson", lastUpdated: "5 mins ago" },
-    { wardNo: "WRD0014", fullName: "John Doe", lastUpdated: "10 mins ago" },
-    { wardNo: "WRD0015", fullName: "Sarah Lee", lastUpdated: "15 mins ago" },
-    { wardNo: "WRD0016", fullName: "Michael Brown", lastUpdated: "20 mins ago" },
-    { wardNo: "WRD0017", fullName: "Emily Davis", lastUpdated: "25 mins ago" },
-    { wardNo: "WRD0012", fullName: "Fredrik North De Silva", lastUpdated: "2 mins ago" },
-    { wardNo: "WRD0013", fullName: "Alice Johnson", lastUpdated: "5 mins ago" },
-    { wardNo: "WRD0014", fullName: "John Doe", lastUpdated: "10 mins ago" },
-    { wardNo: "WRD0015", fullName: "Sarah Lee", lastUpdated: "15 mins ago" },
-    { wardNo: "WRD0016", fullName: "Michael Brown", lastUpdated: "20 mins ago" },
-    { wardNo: "WRD0017", fullName: "Emily Davis", lastUpdated: "25 mins ago" },
-  ];
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">
@@ -143,7 +158,7 @@ export default function Home() {
           className="h-12 hover:scale-105 cursor-pointer"
         />
         <div className="flex items-center space-x-4 bg-blue-800 px-4 py-2 rounded-full">
-        <FaUserMd className="text-xl" />
+          <FaUserMd className="text-xl" />
           <span className="text-md font-semibold">Dr. John Doe</span>
         </div>
       </header>
@@ -325,8 +340,8 @@ export default function Home() {
                 <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
                   Reset Filters
                 </button>
-              </div>              
               </div>
+            </div>
           </div>
         )}
 
@@ -335,7 +350,7 @@ export default function Home() {
           {/* Scrollable Cards */}
           <div className="flex-1 overflow-y-auto p-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {patients.map((patient) => (
+              {currentPatients.map((patient) => (
                 <div
                   key={patient._id}
                   className="group relative p-4 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:border-blue-300 overflow-hidden flex flex-col"
@@ -373,8 +388,8 @@ export default function Home() {
                       </p>
                       <p className="text-xs text-gray-700">
                         Status: <span className={`font-semibold ${patient.status === 'Discharged'
-                            ? 'text-red-600'
-                            : 'text-green-600'
+                          ? 'text-red-600'
+                          : 'text-green-600'
                           }`}>
                           {patient.status}
                         </span>
@@ -387,13 +402,13 @@ export default function Home() {
                     </div>
 
                     <div className="pt-3 border-t border-gray-200">
-                    <Link 
-  href={`/details/${patient.patient_id}`}
-  className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg"
->
-  View Patient
-  <FaArrowRight className="transition-transform group-hover:translate-x-1" />
-</Link>
+                      <Link
+                        href={`/details/${patient.patient_id}`}
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg"
+                      >
+                        View Patient
+                        <FaArrowRight className="transition-transform group-hover:translate-x-1" />
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -403,17 +418,35 @@ export default function Home() {
 
           {/* Fixed Pagination */}
           <div className="py-4 bg-white border-t border-gray-200 sticky bottom-0 flex justify-center space-x-2">
-            {[1, 2, 3, 4, "..."].map((num, index) => (
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            {paginationRange.map((item, index) => (
               <button
                 key={index}
-                className={`px-5 py-2 rounded-lg font-medium transition-all duration-200 ${num === 1
+                onClick={() => typeof item === 'number' ? setCurrentPage(item) : null}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${item === currentPage
                     ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  } ${typeof item !== 'number' ? 'cursor-default' : ''}`}
+                disabled={typeof item !== 'number'}
               >
-                {num}
+                {item}
               </button>
             ))}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
