@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { SetStateAction, useState, useEffect } from "react";
-import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes } from "react-icons/fa";
+import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes, FaPlus } from "react-icons/fa";
 import { useCallback } from "react";
 import { useDebounce } from "use-debounce";
 
@@ -71,13 +71,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    type: "",
-    wardNo: "",
-    location: "",
-    gender: "",
-    condition: "",
-  });
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -200,6 +193,75 @@ export default function Home() {
   // Add this state
   const [isSearching, setIsSearching] = useState(false);
 
+
+  //Filters
+
+  interface Filters {
+    type: string;
+    wardNo: string;
+    location: string;
+    gender: string;
+    condition: string;
+    status: string;
+  }
+
+  // Update your state hooks
+  const [filters, setFilters] = useState<Filters>({
+    type: "",
+    wardNo: "",
+    location: "",
+    gender: "",
+    condition: "",
+    status: ""
+  });
+
+  const [activeFilters, setActiveFilters] = useState<Filters>({ ...filters });
+  const [isFilterApplied, setIsFilterApplied] = useState(false);
+
+  const getFilterOptions = () => {
+    const options = {
+      wards: Array.from(new Set(patients.map(p => p.basic_details.ward))),
+      genders: Array.from(new Set(patients.map(p => p.basic_details.gender))),
+      statuses: Array.from(new Set(patients.map(p => p.status))),
+      locations: Array.from(new Set(patients.map(p => p.basic_details.city))),
+      conditions: Array.from(new Set(patients.map(p => p.primary_diagnosis.cancer_type)))
+    };
+    return options;
+  };
+
+  const filterOptions = getFilterOptions();
+
+  const applyFilters = () => {
+    let filtered = [...patients];
+  
+  // Apply search first
+  if (debouncedSearchQuery) {
+    filtered = filtered.filter(patient => {
+      if (searchType === "name") {
+        const fullName = `${patient.basic_details.first_name} ${patient.basic_details.last_name}`.toLowerCase();
+        return fullName.includes(debouncedSearchQuery.toLowerCase());
+      }
+      return patient.basic_details.ward.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+    });
+  }
+
+
+  filtered = filtered.filter(patient => (
+    (!activeFilters.wardNo || patient.basic_details.ward === activeFilters.wardNo) &&
+        (!activeFilters.gender || patient.basic_details.gender === activeFilters.gender) &&
+        (!activeFilters.location || patient.basic_details.city === activeFilters.location) &&
+        (!activeFilters.condition || patient.primary_diagnosis.cancer_type === activeFilters.condition) &&
+        (!activeFilters.status || patient.status === activeFilters.status)
+      )
+    );
+
+    setFilteredPatients(filtered);
+    setIsFilterApplied(true);
+    setCurrentPage(1);
+  };
+
+  //Filters End
+
   useEffect(() => {
     filterPatients();
   }, [filterPatients]);
@@ -229,6 +291,24 @@ export default function Home() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Load filters from localStorage
+    const savedFilters = localStorage.getItem('patientFilters');
+    if (savedFilters) {
+      const parsed = JSON.parse(savedFilters);
+      setFilters(parsed);
+      setActiveFilters(parsed);
+      setIsFilterApplied(true);
+    }
+  }, []);
+  
+  useEffect(() => {
+    // Save filters to localStorage
+    if (isFilterApplied) {
+      localStorage.setItem('patientFilters', JSON.stringify(activeFilters));
+    }
+  }, [activeFilters, isFilterApplied]);
+
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -248,9 +328,17 @@ export default function Home() {
           alt="Logo"
           className="h-12 hover:scale-105 cursor-pointer"
         />
-        <div className="flex items-center space-x-4 bg-blue-800 px-4 py-2 rounded-full">
-          <FaUserMd className="text-xl" />
-          <span className="text-md font-semibold">Dr. John Doe</span>
+        <div className="flex items-center space-x-4">
+          {/* Add Record Button */}
+          <button className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full transition-colors duration-200">
+            <FaPlus className="text-sm" />
+            <span>Add a Record</span>
+          </button>
+
+          {/* Existing User Profile */}
+          <div className="flex items-center space-x-2 bg-blue-800 px-4 py-2 rounded-full">
+            <FaUserMd className="text-xl" />
+          </div>
         </div>
       </header>
 
@@ -293,7 +381,7 @@ export default function Home() {
                 onChange={handleSearchTypeChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500"
               />
-              Ward No
+              WardNo
             </label>
             <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
               <input
@@ -309,25 +397,59 @@ export default function Home() {
           </div>
 
           {/* Dropdown Filters */}
-          {["Type", "Ward No", "Location", "Gender", "Condition"].map((label) => (
-            <div key={label} className="relative mt-4 group">
+          {[
+            { key: 'wardNo', label: 'Ward No', options: filterOptions.wards },
+            { key: 'gender', label: 'Gender', options: filterOptions.genders },
+            { key: 'location', label: 'Location', options: filterOptions.locations },
+            { key: 'condition', label: 'Condition', options: filterOptions.conditions },
+            { key: 'status', label: 'Status', options: filterOptions.statuses }
+          ].map((filter) => (
+            <div key={filter.key} className="relative mt-4 group">
               <select
                 className="block w-full p-3 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm appearance-none pr-10 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 group-hover:shadow-md"
-                onChange={(e) => handleFilterChange(label.toLowerCase().replace(' ', ''), e.target.value)}
+                value={filters[filter.key as keyof Filters]}
+                onChange={(e) => handleFilterChange(filter.key, e.target.value)}
               >
-                <option value="">Select {label}</option>
-                <option value="option1">{label} Option 1</option>
-                <option value="option2">{label} Option 2</option>
+                <option value="">Select {filter.label}</option>
+                {filter.options.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
               <FaChevronDown className="absolute right-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors pointer-events-none" />
             </div>
           ))}
 
           {/* Buttons */}
-          <button className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0">
+          <button
+            onClick={() => {
+              setActiveFilters({ ...filters });
+              applyFilters();
+            }}
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+          >
             Apply Filters
           </button>
-          <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
+
+          <button
+            onClick={() => {
+              const resetFilters = {
+                type: "",
+                wardNo: "",
+                location: "",
+                gender: "",
+                condition: "",
+                status: ""
+              };
+              setFilters(resetFilters);
+              setActiveFilters(resetFilters);
+              setFilteredPatients(patients);
+              setIsFilterApplied(false);
+              setCurrentPage(1);
+            }}
+            className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors"
+          >
             Reset Filters
           </button>
         </div>
@@ -420,23 +542,62 @@ export default function Home() {
                 </div>
 
                 {/* Dropdown Filters */}
-                {["Type", "Ward No", "Location", "Gender", "Condition"].map((label) => (
-                  <div key={label} className="relative mt-4 group">
+                {[
+                  { key: 'wardNo', label: 'Ward No', options: filterOptions.wards },
+                  { key: 'gender', label: 'Gender', options: filterOptions.genders },
+                  { key: 'location', label: 'Location', options: filterOptions.locations },
+                  { key: 'condition', label: 'Condition', options: filterOptions.conditions },
+                  { key: 'status', label: 'Status', options: filterOptions.statuses }
+                ].map((filter) => (
+                  <div key={filter.key} className="relative mt-4 group">
                     <select
                       className="block w-full p-3 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm appearance-none pr-10 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 group-hover:shadow-md"
-                      onChange={(e) => handleFilterChange(label.toLowerCase().replace(' ', ''), e.target.value)}
+                      value={filters[filter.key as keyof Filters]}
+                      onChange={(e) => handleFilterChange(filter.key, e.target.value)}
                     >
-                      <option value="">Select {label}</option>
-                      <option value="option1">{label} Option 1</option>
-                      <option value="option2">{label} Option 2</option>
+                      <option value="">Select {filter.label}</option>
+                      {filter.options.map(option => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
                     </select>
                     <FaChevronDown className="absolute right-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors pointer-events-none" />
                   </div>
                 ))}
 
                 {/* Buttons */}
-                <button className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0">
+                // Apply Filters button
+                <button
+                  onClick={() => {
+                    setActiveFilters({ ...filters });
+                    applyFilters();
+                  }}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+                >
                   Apply Filters
+                </button>
+
+// Reset Filters button
+                <button
+                  onClick={() => {
+                    const resetFilters = {
+                      type: "",
+                      wardNo: "",
+                      location: "",
+                      gender: "",
+                      condition: "",
+                      status: ""
+                    };
+                    setFilters(resetFilters);
+                    setActiveFilters(resetFilters);
+                    setFilteredPatients(patients);
+                    setIsFilterApplied(false);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors"
+                >
+                  Reset Filters
                 </button>
                 <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
                   Reset Filters
