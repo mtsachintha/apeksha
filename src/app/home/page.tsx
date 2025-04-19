@@ -31,15 +31,17 @@ interface PatientData {
   };
   family_background: { disease: string; relation: string }[];
   vitals: {
-    weight: number;
-    height: number;
-    blood_pressure: string;
-    pulse: number;
-    temperature: number;
-    date: string;
-    general_observations: string[];
-    special_notes: string;
-  }[];
+    [date: string]: {
+      weight: number;
+      height: number;
+      blood_pressure: string;
+      pulse: number;
+      temperature: number;
+      general_observations: string[];
+      special_notes: string;
+    };
+  };
+  
   primary_diagnosis: {
     cancer_type: string;
     sub_category: string;
@@ -52,10 +54,10 @@ interface PatientData {
     notes: string;
   };
   lab_results: {
-    blood_tests: string[];
-    imaging_studies: string[];
-    other_investigations: string[];
-  };
+    blood_tests: { name: string; result: string }[];
+    imaging_studies: { name: string; result: string }[];
+    other_investigations: { name: string; result: string }[];
+  };  
   medications: { name: string; dosage: string; start_date: string; end_date: string }[];
   surgeries: { name: string; date: string; notes: string; complication: string }[];
   patient_log: { date: string; note: string }[];

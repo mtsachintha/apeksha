@@ -36,15 +36,17 @@ interface Patient {
   };
   family_background: { disease: string; relation: string }[];
   vitals: {
-    weight: number;
-    height: number;
-    blood_pressure: string;
-    pulse: number;
-    temperature: number;
-    date: string;
-    general_observations: string[];
-    special_notes: string;
-  }[];
+    [date: string]: {
+      weight: number;
+      height: number;
+      blood_pressure: string;
+      pulse: number;
+      temperature: number;
+      general_observations: string[];
+      special_notes: string;
+    };
+  };
+
   primary_diagnosis: {
     cancer_type: string;
     sub_category: string;
@@ -96,7 +98,7 @@ const DetailsPage = () => {
       previous_surgeries: [],
     },
     family_background: [],
-    vitals: [],
+    vitals: {},
     primary_diagnosis: {
       cancer_type: '',
       sub_category: '',
@@ -156,68 +158,125 @@ const DetailsPage = () => {
     setFamilyHistory(familyHistory.filter((_, i) => i !== index));
   };
 
-  // Medications
-  const [medications, setMedications] = useState([
-    { name: "", dose: "", start: "", end: "" }
-  ]);
+  const [medications, setMedications] = useState(patient.medications || []);
+
+  useEffect(() => {
+    setMedications(patient.medications || []);
+  }, [patient.medications]);
+
   const addMedication = () => {
-    setMedications([...medications, { name: "", dose: "", start: "", end: "" }]);
+    setMedications((prev) => [
+      ...prev,
+      { name: '', dosage: '', start_date: '', end_date: '' },
+    ]);
   };
+
   const removeMedication = (index: number) => {
-    setMedications(medications.filter((_, i) => i !== index));
+    const updated = [...medications];
+    updated.splice(index, 1);
+    setMedications(updated);
   };
+
   const updateMedications = () => {
-    console.log("Medications updated:", medications);
-    // You can add logic here to save the data to a database or API
+    setPatient((prev) => ({
+      ...prev,
+      medications: medications.map((med) => ({
+        ...med,
+        start_date: new Date(med.start_date).toISOString(),
+        end_date: new Date(med.end_date).toISOString(),
+      })),
+    }));
   };
 
   // Surgeries Performed
-  const [surgeriesPerformed, setSurgeriesPerformed] = useState([
-    { name: "", date: "", notes: "", complications: "" }
-  ]);
+  const [surgeriesPerformed, setSurgeriesPerformed] = useState(patient.surgeries || []);
+
+  useEffect(() => {
+    setSurgeriesPerformed(patient.surgeries || []);
+  }, [patient.surgeries]);
 
   const addSurgeryPerformed = () => {
-    setSurgeriesPerformed([...surgeriesPerformed, { name: "", date: "", notes: "", complications: "" }]);
+    setSurgeriesPerformed(prev => [
+      ...prev,
+      { name: '', date: '', notes: '', complication: '' },
+    ]);
   };
 
   const removeSurgeryPerformed = (index: number) => {
-    setSurgeriesPerformed(surgeriesPerformed.filter((_, i) => i !== index));
+    const updated = [...surgeriesPerformed];
+    updated.splice(index, 1);
+    setSurgeriesPerformed(updated);
   };
 
   const updateSurgeriesPerformed = () => {
-    // Implement update logic here
+    setPatient(prev => ({
+      ...prev,
+      surgeries: surgeriesPerformed.map(surgery => ({
+        ...surgery,
+        date: new Date(surgery.date).toISOString(),
+      })),
+    }));
   };
 
+
   // Patient Records
-  const [patientRecords, setPatientRecords] = useState([
-    { date: "", note: "" }
-  ]);
+  const [patientRecords, setPatientRecords] = useState(patient.patient_log || []);
+
+  useEffect(() => {
+    setPatientRecords(patient.patient_log || []);
+  }, [patient.patient_log]);
 
   const addPatientRecord = () => {
-    setPatientRecords([...patientRecords, { date: "", note: "" }]);
+    setPatientRecords(prev => [...prev, { date: '', note: '' }]);
   };
 
   const removePatientRecord = (index: number) => {
-    setPatientRecords(patientRecords.filter((_, i) => i !== index));
+    const updated = [...patientRecords];
+    updated.splice(index, 1);
+    setPatientRecords(updated);
   };
 
   const updatePatientRecords = () => {
-    // Implement update logic here
+    setPatient(prev => ({
+      ...prev,
+      patient_log: patientRecords.map((record) => ({
+        ...record,
+        date: new Date(record.date).toISOString(),
+      })),
+    }));
   };
 
+
   // Add a complication record
-  const [complicationRecords, setComplicationRecords] = useState([
-    { date: "", complication: "", severity: "normal" }
-  ]);
+  const [complicationRecords, setComplicationRecords] = useState(patient.complications_and_risks || []);
+
+  useEffect(() => {
+    setComplicationRecords(patient.complications_and_risks || []);
+  }, [patient.complications_and_risks]);
+
   const addComplicationRecord = () => {
-    setComplicationRecords([...complicationRecords, { date: "", complication: "", severity: "normal" }]);
+    setComplicationRecords(prev => [
+      ...prev,
+      { date: '', complication: '', severity: 'normal' }
+    ]);
   };
+
   const removeComplicationRecord = (index: number) => {
-    setComplicationRecords(complicationRecords.filter((_, i) => i !== index));
+    const updated = [...complicationRecords];
+    updated.splice(index, 1);
+    setComplicationRecords(updated);
   };
-  const updateComplicationRecord = () => {
-    console.log("Updated illnesses:", allergies);
+
+  const updateComplicationRecords = () => {
+    setPatient(prev => ({
+      ...prev,
+      complications_and_risks: complicationRecords.map(r => ({
+        ...r,
+        date: new Date(r.date).toISOString()
+      }))
+    }));
   };
+
 
 
   //chronicIllnesses
@@ -256,18 +315,6 @@ const DetailsPage = () => {
     setPreviousSurgeries(previousSurgeries.filter((_, i) => i !== index));
   };
   const updateSurgeries = () => {
-    // Add your update logic here
-  };
-
-  // General Inspection
-  const [generalInspection, setGeneralInspection] = useState([""]);
-  const addInspection = () => {
-    setGeneralInspection([...generalInspection, ""]);
-  };
-  const removeInspection = (index: number) => {
-    setGeneralInspection(generalInspection.filter((_, i) => i !== index));
-  };
-  const updateInspection = () => {
     // Add your update logic here
   };
 
@@ -324,6 +371,21 @@ const DetailsPage = () => {
     );
   };
 
+  const [selectedDate, setSelectedDate] = useState("");
+  const vitals = patient.vitals[selectedDate] || {};
+  const [specialNotes, setSpecialNotes] = useState("");
+  // General Inspection
+  const [generalInspection, setGeneralInspection] = useState([""]);
+  const addInspection = () => {
+    setGeneralInspection([...generalInspection, ""]);
+  };
+  const removeInspection = (index: number) => {
+    setGeneralInspection(generalInspection.filter((_, i) => i !== index));
+  };
+  const updateInspection = () => {
+    // Add your update logic here
+  };
+
   const cancerTypes = ["Breast Cancer", "Lung Cancer", "Prostate Cancer"];
   const stages = ["Stage I", "Stage II", "Stage III", "Stage IV"];
   const subStages = ["A", "B", "C", "D"];
@@ -335,23 +397,71 @@ const DetailsPage = () => {
     // Empty function
   };
 
-  useEffect(() => {
-    if (patient) {
-      setChronicIllnesses(patient.medical_history.chronic_illness || [""]);
-      setAllergies(patient.medical_history.allergies || [""]);
-      setPreviousSurgeries(patient.medical_history.previous_surgeries || [""]);
+  const getAge = (dob: string) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
     }
+    return age;
+  };
+
+  const getAvatarImage = () => {
+    const age = getAge(patient.basic_details.birthday);
+    const gender = patient.basic_details.gender?.toLowerCase();
+
+    if (age <= 8) return "/baby.png";
+    if (age <= 40) return gender === "male" ? "/man.png" : "/woman.png";
+    return gender === "male" ? "/old_man.png" : "/old_woman.png";
+  };
+
+  const latestVitalsDate = Object.keys(patient.vitals).sort().reverse()[0];
+  const latestVitals = patient.vitals[latestVitalsDate] || {};
+
+
+  useEffect(() => {
+    if (!patient) return;
+
+    // Initialize blood tests
+    setBloodTests(
+      patient.lab_results?.blood_tests?.length > 0
+        ? patient.lab_results.blood_tests.map((item: any) => ({
+          name: item.name || "",
+          result: item.result || "",
+        }))
+        : [{ name: "", result: "" }]
+    );
+
+    // Initialize imaging studies
+    setImagingStudies(
+      patient.lab_results?.imaging_studies?.length > 0
+        ? patient.lab_results.imaging_studies.map((item: any) => ({
+          name: item.name || "",
+          result: item.result || "",
+        }))
+        : [{ name: "", result: "" }]
+    );
+
+    // Initialize other investigations
+    setOtherInvestigations(
+      patient.lab_results?.other_investigations?.length > 0
+        ? patient.lab_results.other_investigations.map((item: any) => ({
+          name: item.name || "",
+          result: item.result || "",
+        }))
+        : [{ name: "", result: "" }]
+    );
   }, [patient]);
 
   useEffect(() => {
-    if (patient?.family_background) {
-      const mapped = patient.family_background.map((item: any) => ({
-        condition: item.disease,
-        relation: item.relation,
-      }));
-      setFamilyHistory(mapped.length > 0 ? mapped : [{ condition: "", relation: "" }]);
+    if (selectedDate && patient.vitals[selectedDate]) {
+      const v = patient.vitals[selectedDate];
+      setGeneralInspection(v.general_observations || []);
+      setSpecialNotes(v.special_notes || "");
     }
-  }, [patient]);
+  }, [selectedDate, patient.vitals]);
 
 
   if (loading) {
@@ -408,23 +518,27 @@ const DetailsPage = () => {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto p-6 flex items-center space-x-6">
           <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border-2 border-blue-200">
-            <img src="/avatar.png" alt="Avatar" className="w-full h-full object-cover" />
+            <img src={getAvatarImage()} alt="Avatar" className="w-full h-full object-cover" />
           </div>
+
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">{patient.basic_details.first_name}</h2>
-            <div className="flex flex-wrap items-center gap-4 mt-2 text-gray-600">
+            <h2 className="text-2xl font-bold text-gray-800"> {patient.basic_details.first_name} {" "}  {patient.basic_details.last_name} </h2>
+            <div className="flex flex-wrap items-center gap-2 mt-2 text-gray-600">
               <span className="flex items-center">
                 <FaCalendarAlt className="mr-2 text-blue-500" />
-                29-12-1988 (35 y.o) | Male (Active)
+                {new Date(patient.basic_details.birthday).toLocaleDateString('en-AU')} ({getAge(patient.basic_details.birthday)} y.o) | {patient.basic_details.gender}
               </span>
+
               <span className="flex items-center">
                 <FaMapMarkerAlt className="mr-2 text-blue-500" />
-                The Sun, Mildura VIC 3500
+                {patient.basic_details.address}, {patient.basic_details.city}
               </span>
+
               <span className="flex items-center">
                 <FaPhone className="mr-2 text-blue-500" />
-                0421 935 265 (Mobile)
+                {patient.basic_details.phone} (Mobile)
               </span>
+
             </div>
           </div>
         </div>
@@ -489,11 +603,13 @@ const DetailsPage = () => {
               {/* Last Vitals */}
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Last Vitals</h2>
-                <p><strong>Weight:</strong> {patient.vitals[0].weight} Kg</p>
-                <p><strong>Height:</strong> {patient.vitals[0].height} cm</p>
-                <p><strong>Blood Pressure:</strong> {patient.vitals[0].blood_pressure}</p>
-                <p><strong>Pulse:</strong> {patient.vitals[0].pulse}</p>
+                <p><strong>Date:</strong> {latestVitalsDate}</p>
+                <p><strong>Weight:</strong> {latestVitals.weight} Kg</p>
+                <p><strong>Height:</strong> {latestVitals.height} cm</p>
+                <p><strong>Blood Pressure:</strong> {latestVitals.blood_pressure}</p>
+                <p><strong>Pulse:</strong> {latestVitals.pulse}</p>
               </div>
+
 
               {/* Major Problems */}
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
@@ -510,15 +626,23 @@ const DetailsPage = () => {
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Lab Results</h2>
                 {patient.lab_results?.blood_tests?.[0] && (
-                  <p><strong>Blood:</strong> {patient.lab_results.blood_tests[0]}</p>
+                  <p>
+                    <strong>Blood:</strong>{" "}
+                    {(patient.lab_results.blood_tests[0] as any)?.name} – {(patient.lab_results.blood_tests[0] as any)?.result}
+                  </p>
                 )}
                 {patient.lab_results?.imaging_studies?.[0] && (
-                  <p><strong>Imaging:</strong> {patient.lab_results.imaging_studies[0]}</p>
+                  <p>
+                    <strong>Imaging:</strong>{" "}
+                    {(patient.lab_results.imaging_studies[0] as any)?.name} – {(patient.lab_results.imaging_studies[0] as any)?.result}
+                  </p>
                 )}
                 {patient.lab_results?.other_investigations?.[0] && (
-                  <p><strong>Other:</strong> {patient.lab_results.other_investigations[0]}</p>
+                  <p>
+                    <strong>Other:</strong>{" "}
+                    {(patient.lab_results.other_investigations[0] as any)?.name} – {(patient.lab_results.other_investigations[0] as any)?.result}
+                  </p>
                 )}
-
               </div>
               <div className="bg-white p-4 rounded-lg shadow text-gray-500">
                 <h2 className="font-semibold text-gray-700">Chronic Medication</h2>
@@ -1298,7 +1422,7 @@ const DetailsPage = () => {
                               stage: e.target.value,
                             }))
                           }
-                          className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           {stages.map((option, index) => (
                             <option key={index} value={option}>
@@ -1321,7 +1445,7 @@ const DetailsPage = () => {
                               },
                             }))
                           }
-                          className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           {subStages.map((option, index) => (
                             <option key={index} value={option}>
@@ -1366,8 +1490,9 @@ const DetailsPage = () => {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Findings</label>
                           <textarea
+                            defaultValue={patient.primary_diagnosis.findings}
                             placeholder="Enter findings"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                           />
                         </div>
@@ -1375,8 +1500,9 @@ const DetailsPage = () => {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Suspicious Lumps</label>
                           <textarea
+                            defaultValue={patient.primary_diagnosis.suspicious_lumps}
                             placeholder="Enter details about suspicious lumps"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                           />
                         </div>
@@ -1384,13 +1510,15 @@ const DetailsPage = () => {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Pain Assessment</label>
                           <textarea
+                            defaultValue={patient.primary_diagnosis.pain_assessment}
                             placeholder="Enter pain assessment details"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                           />
                         </div>
                       </div>
                     </div>
+
 
                     <div className="mt-6">
                       <h4 className="text-l font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -1405,7 +1533,8 @@ const DetailsPage = () => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">Consulting Doctor</label>
                           <input
                             type="text"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 bg-gray-50"
+                            defaultValue={patient.primary_diagnosis.consulting_doctor}
+                            className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 bg-gray-50"
                             readOnly
                           />
                         </div>
@@ -1413,14 +1542,16 @@ const DetailsPage = () => {
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                           <textarea
+                            defaultValue={patient.primary_diagnosis.notes}
                             placeholder="Enter physician notes"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                           />
                         </div>
                       </div>
                     </div>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
+
 
                     <div className="flex justify-end space-x-2 mt-4">
                       <button
@@ -1439,28 +1570,28 @@ const DetailsPage = () => {
               {activeSubSection === "investigationsordered" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                    <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-                      <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                       Blood Tests
-                    </h4>
+                    </h3>
                     <div>
-                      {bloodTests.map((test, index) => (
-                        <div key={index} className="flex items-center space-x-2 mb-2">
+                      {bloodTests?.map((test, index) => (
+                        <div key={`blood-test-${index}`} className="flex items-center space-x-2 mb-2">
                           <input
                             type="text"
                             placeholder="Test Name"
-                            value={test.name}
+                            value={test?.name || ''}
                             onChange={(e) => updateBloodTest(index, "name", e.target.value)}
-                            className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-1/2 text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           <input
                             type="text"
                             placeholder="Result"
-                            value={test.result}
+                            value={test?.result || ''}
                             onChange={(e) => updateBloodTest(index, "result", e.target.value)}
-                            className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-1/2 text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                           {bloodTests.length > 1 && (
                             <button
@@ -1472,135 +1603,81 @@ const DetailsPage = () => {
                           )}
                         </div>
                       ))}
-
-                      <div className="flex justify-end space-x-2 mt-4">
-                        <button
-                          onClick={addBloodTest}
-                          className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                        >
-                          <PlusCircle size={20} className="mr-2" />
-                          Add More
-                        </button>
-
-                        <button
-                          onClick={() => updateBloodTest(bloodTests.length - 1, "name", "new value")}
-                          className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                        >
-                          <Save size={20} className="mr-2" />
-                          Update
-                        </button>
-                      </div>
                     </div>
+                  </div>
+
+                  <div className="p-6">
+                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 3 0 016 0z" />
+                      </svg>
+                      Imaging Studies
+                    </h3>
                     <div>
-                      <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                        </svg>
-                        Imaging Studies
-                      </h4>
-                      <div>
-                        {imagingStudies.map((study, index) => (
-                          <div key={index} className="flex items-center space-x-2 mb-2">
-                            <input
-                              type="text"
-                              placeholder="Study Name"
-                              value={study.name}
-                              onChange={(e) => updateImagingStudy(imagingStudies.length - 1, "name", e.target.value)}
-                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            <input
-                              type="text"
-                              placeholder="Result"
-                              value={study.result}
-                              onChange={(e) => updateImagingStudy(index, "result", e.target.value)}
-                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {imagingStudies.length > 1 && (
-                              <button
-                                onClick={() => removeImagingStudy(index)}
-                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-
-                        <div className="flex justify-end space-x-2 mt-4">
-                          <button
-                            onClick={addImagingStudy}
-                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                          >
-                            <PlusCircle size={20} className="mr-2" />
-                            Add More
-                          </button>
-
-                          <button
-                            onClick={() => updateImagingStudy(imagingStudies.length - 1, "name", "new value")}
-                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                          >
-                            <Save size={20} className="mr-2" />
-                            Update
-                          </button>
+                      {imagingStudies?.map((study, index) => (
+                        <div key={`imaging-study-${index}`} className="flex items-center space-x-2 mb-2">
+                          <input
+                            type="text"
+                            placeholder="Study Name"
+                            value={study?.name || ''}
+                            onChange={(e) => updateImagingStudy(index, "name", e.target.value)}
+                            className="w-1/2 text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Result"
+                            value={study?.result || ''}
+                            onChange={(e) => updateImagingStudy(index, "result", e.target.value)}
+                            className="w-1/2 text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {imagingStudies.length > 1 && (
+                            <button
+                              onClick={() => removeImagingStudy(index)}
+                              className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                            >
+                              <Trash size={18} />
+                            </button>
+                          )}
                         </div>
-                      </div>
+                      ))}
                     </div>
+                  </div>
 
+                  <div className="p-6">
+                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      Other Investigations
+                    </h3>
                     <div>
-                      <h4 className="text-sm font-normal text-gray-800 mb-4 flex items-center gap-2">
-                        <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                        </svg>
-                        Other Investigations
-                      </h4>
-                      <div>
-                        {otherInvestigations.map((investigation, index) => (
-                          <div key={index} className="flex items-center space-x-2 mb-2">
-                            <input
-                              type="text"
-                              placeholder="Investigation Name"
-                              value={investigation.name}
-                              onChange={(e) => updateInvestigation(index, "name", e.target.value)}
-                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            <input
-                              type="text"
-                              placeholder="Result"
-                              value={investigation.result}
-                              onChange={(e) => updateInvestigation(index, "result", e.target.value)}
-                              className="w-1/2 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {otherInvestigations.length > 1 && (
-                              <button
-                                onClick={() => removeInvestigation(index)}
-                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-
-                        <div className="flex justify-end space-x-2 mt-4">
-                          <button
-                            onClick={addInvestigation}
-                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                          >
-                            <PlusCircle size={20} className="mr-2" />
-                            Add More
-                          </button>
-
-                          <button
-                            onClick={() => updateInvestigation(imagingStudies.length - 1, "name", "new value")}
-                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                          >
-                            <Save size={20} className="mr-2" />
-                            Update
-                          </button>
+                      {otherInvestigations?.map((investigation, index) => (
+                        <div key={`investigation-${index}`} className="flex items-center space-x-2 mb-2">
+                          <input
+                            type="text"
+                            placeholder="Investigation Name"
+                            value={investigation?.name || ''}
+                            onChange={(e) => updateInvestigation(index, "name", e.target.value)}
+                            className="w-1/2 text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Result"
+                            value={investigation?.result || ''}
+                            onChange={(e) => updateInvestigation(index, "result", e.target.value)}
+                            className="w-1/2 text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                          {otherInvestigations.length > 1 && (
+                            <button
+                              onClick={() => removeInvestigation(index)}
+                              className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                            >
+                              <Trash size={18} />
+                            </button>
+                          )}
                         </div>
-                      </div>
+                      ))}
                     </div>
-
                   </div>
                 </div>
               )}
@@ -1616,12 +1693,19 @@ const DetailsPage = () => {
                         </svg>
                         Observations
                       </h3>
-                      <select className="border border-gray-300 rounded px-3 py-1 text-gray-700">
-                        <option>Select Date</option>
-                        <option>2025-03-30</option>
-                        <option>2025-03-29</option>
-                        <option>2025-03-28</option>
+                      <select
+                        className="border border-gray-300 rounded px-3 py-1 text-gray-700"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                      >
+                        <option value="">Select Date</option>
+                        {Object.keys(patient.vitals).map((date) => (
+                          <option key={date} value={date}>
+                            {date}
+                          </option>
+                        ))}
                       </select>
+
                     </div>
 
                     <div className="space-y-6">
@@ -1638,7 +1722,9 @@ const DetailsPage = () => {
                             <input
                               type="text"
                               placeholder="e.g., 120/80"
-                              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              value={vitals.blood_pressure || ""}
+                              readOnly
+                              className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -1646,7 +1732,9 @@ const DetailsPage = () => {
                             <input
                               type="text"
                               placeholder="e.g., 72 bpm"
-                              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              value={vitals.pulse?.toString() || ""}
+                              readOnly
+                              className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
                           <div>
@@ -1654,7 +1742,9 @@ const DetailsPage = () => {
                             <input
                               type="text"
                               placeholder="e.g., 98.6°F"
-                              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              value={vitals.temperature?.toString() || ""}
+                              readOnly
+                              className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
                         </div>
@@ -1666,7 +1756,9 @@ const DetailsPage = () => {
                           <input
                             type="text"
                             placeholder="e.g., 120/80"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={vitals.weight?.toString() || ""}
+                            readOnly
+                            className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
                         <div>
@@ -1674,7 +1766,8 @@ const DetailsPage = () => {
                           <input
                             type="text"
                             placeholder="e.g., 120/80"
-                            className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={vitals.height?.toString() || ""}
+                            className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
 
@@ -1699,7 +1792,7 @@ const DetailsPage = () => {
                                   newInspection[index] = e.target.value;
                                   setGeneralInspection(newInspection);
                                 }}
-                                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               />
                               {generalInspection.length > 1 && (
                                 <button
@@ -1711,6 +1804,7 @@ const DetailsPage = () => {
                               )}
                             </div>
                           ))}
+
 
                           <div className="flex justify-end space-x-2 mt-4">
                             <button
@@ -1742,9 +1836,12 @@ const DetailsPage = () => {
                         </h4>
                         <textarea
                           placeholder="Enter any special notes"
-                          className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          value={specialNotes}
+                          onChange={(e) => setSpecialNotes(e.target.value)}
+                          className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           rows={3}
                         />
+
                       </div>
                     </div>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
@@ -1779,42 +1876,42 @@ const DetailsPage = () => {
                           placeholder="E.g., Paracetamol"
                           value={medication.name}
                           onChange={(e) => {
-                            const newMedications = [...medications];
-                            newMedications[index].name = e.target.value;
-                            setMedications(newMedications);
+                            const updated = [...medications];
+                            updated[index].name = e.target.value;
+                            setMedications(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <input
                           type="text"
                           placeholder="E.g., 500mg"
-                          value={medication.dose}
+                          value={medication.dosage}
                           onChange={(e) => {
-                            const newMedications = [...medications];
-                            newMedications[index].dose = e.target.value;
-                            setMedications(newMedications);
+                            const updated = [...medications];
+                            updated[index].dosage = e.target.value;
+                            setMedications(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <input
                           type="date"
-                          value={medication.start}
+                          value={medication.start_date?.slice(0, 10) || ''}
                           onChange={(e) => {
-                            const newMedications = [...medications];
-                            newMedications[index].start = e.target.value;
-                            setMedications(newMedications);
+                            const updated = [...medications];
+                            updated[index].start_date = e.target.value;
+                            setMedications(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <input
                           type="date"
-                          value={medication.end}
+                          value={medication.end_date?.slice(0, 10) || ''}
                           onChange={(e) => {
-                            const newMedications = [...medications];
-                            newMedications[index].end = e.target.value;
-                            setMedications(newMedications);
+                            const updated = [...medications];
+                            updated[index].end_date = e.target.value;
+                            setMedications(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         {medications.length > 1 && (
                           <button
@@ -1847,6 +1944,7 @@ const DetailsPage = () => {
                     </button>
                   </div>
                 </div>
+
               )}
 
               {activeSubSection === "suregries" && (
@@ -1866,41 +1964,41 @@ const DetailsPage = () => {
                           placeholder="E.g., Appendectomy"
                           value={surgery.name}
                           onChange={(e) => {
-                            const newSurgeriesPerformed = [...surgeriesPerformed];
-                            newSurgeriesPerformed[index].name = e.target.value;
-                            setSurgeriesPerformed(newSurgeriesPerformed);
+                            const updated = [...surgeriesPerformed];
+                            updated[index].name = e.target.value;
+                            setSurgeriesPerformed(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <input
                           type="date"
-                          value={surgery.date}
+                          value={surgery.date?.slice(0, 10) || ''}
                           onChange={(e) => {
-                            const newSurgeriesPerformed = [...surgeriesPerformed];
-                            newSurgeriesPerformed[index].date = e.target.value;
-                            setSurgeriesPerformed(newSurgeriesPerformed);
+                            const updated = [...surgeriesPerformed];
+                            updated[index].date = e.target.value;
+                            setSurgeriesPerformed(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-ful text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                         <textarea
                           placeholder="Notes"
                           value={surgery.notes}
                           onChange={(e) => {
-                            const newSurgeriesPerformed = [...surgeriesPerformed];
-                            newSurgeriesPerformed[index].notes = e.target.value;
-                            setSurgeriesPerformed(newSurgeriesPerformed);
+                            const updated = [...surgeriesPerformed];
+                            updated[index].notes = e.target.value;
+                            setSurgeriesPerformed(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         ></textarea>
                         <textarea
                           placeholder="Complications"
-                          value={surgery.complications}
+                          value={surgery.complication}
                           onChange={(e) => {
-                            const newSurgeriesPerformed = [...surgeriesPerformed];
-                            newSurgeriesPerformed[index].complications = e.target.value;
-                            setSurgeriesPerformed(newSurgeriesPerformed);
+                            const updated = [...surgeriesPerformed];
+                            updated[index].complication = e.target.value;
+                            setSurgeriesPerformed(updated);
                           }}
-                          className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         ></textarea>
                         {surgeriesPerformed.length > 1 && (
                           <button
@@ -1944,43 +2042,6 @@ const DetailsPage = () => {
                       Patient Records
                     </h3>
 
-                    <div className="space-y-4 md:hidden">
-                      {patientRecords.map((record, index) => (
-                        <div key={index} className="p-4 border border-gray-300 rounded-lg">
-                          <div className="flex justify-between items-center mb-2">
-                            <input
-                              type="date"
-                              value={record.date}
-                              onChange={(e) => {
-                                const newRecords = [...patientRecords];
-                                newRecords[index].date = e.target.value;
-                                setPatientRecords(newRecords);
-                              }}
-                              className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {patientRecords.length > 1 && (
-                              <button
-                                onClick={() => removePatientRecord(index)}
-                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
-                          </div>
-                          <textarea
-                            placeholder="Note"
-                            value={record.note}
-                            onChange={(e) => {
-                              const newRecords = [...patientRecords];
-                              newRecords[index].note = e.target.value;
-                              setPatientRecords(newRecords);
-                            }}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          ></textarea>
-                        </div>
-                      ))}
-                    </div>
-
                     <div className="hidden md:block overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -2000,13 +2061,13 @@ const DetailsPage = () => {
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <input
                                   type="date"
-                                  value={record.date}
+                                  value={record.date ? record.date.slice(0, 10) : ''}
                                   onChange={(e) => {
                                     const newRecords = [...patientRecords];
                                     newRecords[index].date = e.target.value;
                                     setPatientRecords(newRecords);
                                   }}
-                                  className="w-48 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  className="w-48 text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap" colSpan={2}>
@@ -2018,7 +2079,7 @@ const DetailsPage = () => {
                                     newRecords[index].note = e.target.value;
                                     setPatientRecords(newRecords);
                                   }}
-                                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 ></textarea>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -2062,57 +2123,6 @@ const DetailsPage = () => {
                   <div className="p-6">
                     <h3 className="text-l font-semibold text-gray-800 mb-6">Complications and Risks</h3>
 
-                    <div className="space-y-4 md:hidden">
-                      {complicationRecords.map((record, index) => (
-                        <div key={index} className="p-4 border border-gray-300 rounded-lg">
-                          <div className="flex justify-between items-center mb-2">
-                            <input
-                              type="date"
-                              value={record.date}
-                              onChange={(e) => {
-                                const newRecords = [...complicationRecords];
-                                newRecords[index].date = e.target.value;
-                                setComplicationRecords(newRecords);
-                              }}
-                              className="border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {complicationRecords.length > 1 && (
-                              <button
-                                onClick={() => removeComplicationRecord(index)}
-                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
-                          </div>
-                          <input
-                            type="text"
-                            placeholder="Complication or Risk"
-                            value={record.complication}
-                            onChange={(e) => {
-                              const newRecords = [...complicationRecords];
-                              newRecords[index].complication = e.target.value;
-                              setComplicationRecords(newRecords);
-                            }}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                          <select
-                            value={record.severity}
-                            onChange={(e) => {
-                              const newRecords = [...complicationRecords];
-                              newRecords[index].severity = e.target.value;
-                              setComplicationRecords(newRecords);
-                            }}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent mt-2"
-                          >
-                            <option value="high">High</option>
-                            <option value="normal">Normal</option>
-                            <option value="low">Low</option>
-                          </select>
-                        </div>
-                      ))}
-                    </div>
-
                     <div className="hidden md:block overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -2135,13 +2145,13 @@ const DetailsPage = () => {
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <input
                                   type="date"
-                                  value={record.date}
+                                  value={record.date ? new Date(record.date).toISOString().split('T')[0] : ''}
                                   onChange={(e) => {
                                     const newRecords = [...complicationRecords];
                                     newRecords[index].date = e.target.value;
                                     setComplicationRecords(newRecords);
                                   }}
-                                  className="w-48 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  className="w-48 border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -2154,7 +2164,7 @@ const DetailsPage = () => {
                                     newRecords[index].complication = e.target.value;
                                     setComplicationRecords(newRecords);
                                   }}
-                                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -2165,7 +2175,7 @@ const DetailsPage = () => {
                                     newRecords[index].severity = e.target.value;
                                     setComplicationRecords(newRecords);
                                   }}
-                                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 >
                                   <option value="high">High</option>
                                   <option value="normal">Normal</option>
@@ -2197,7 +2207,7 @@ const DetailsPage = () => {
                         Add More
                       </button>
                       <button
-                        onClick={updatePatientRecords}
+                        onClick={updateComplicationRecords}
                         className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
                       >
                         <Save size={20} className="mr-2" />

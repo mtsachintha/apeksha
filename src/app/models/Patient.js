@@ -28,18 +28,18 @@ const PatientSchema = new mongoose.Schema({
       relation: String,
     },
   ],
-  vitals: [
-    {
+  vitals: {
+    type: Map,
+    of: new mongoose.Schema({
       weight: Number,
       height: Number,
       blood_pressure: String,
       pulse: Number,
       temperature: Number,
-      date: Date,
       general_observations: [String],
       special_notes: String,
-    },
-  ],
+    }, { _id: false }),
+  },  
   primary_diagnosis: {
     cancer_type: String,
     sub_category: String,
@@ -52,10 +52,26 @@ const PatientSchema = new mongoose.Schema({
     notes: String,
   },
   lab_results: {
-    blood_tests: [String],
-    imaging_studies: [String],
-    other_investigations: [String],
+    blood_tests: [
+      {
+        name: String,
+        result: String,
+      },
+    ],
+    imaging_studies: [
+      {
+        name: String,
+        result: String,
+      },
+    ],
+    other_investigations: [
+      {
+        name: String,
+        result: String,
+      },
+    ],
   },
+  
   medications: [
     {
       name: String,
