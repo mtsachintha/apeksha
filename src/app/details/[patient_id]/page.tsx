@@ -371,8 +371,12 @@ const DetailsPage = () => {
   };
 
   const [selectedDate, setSelectedDate] = useState("");
-  const vitals = patient.vitals[selectedDate] || {};
+  const vitals = (patient?.vitals?.[selectedDate] || {});
   const [specialNotes, setSpecialNotes] = useState("");
+  const latestVitalsDate = patient?.vitals ? Object.keys(patient.vitals).sort().reverse()[0] : "";
+  const latestVitals = (patient?.vitals?.[latestVitalsDate] || {});
+
+
   // General Inspection
   const [generalInspection, setGeneralInspection] = useState([""]);
   const addInspection = () => {
@@ -415,10 +419,6 @@ const DetailsPage = () => {
     if (age <= 40) return gender === "male" ? "/man.png" : "/woman.png";
     return gender === "male" ? "/old_man.png" : "/old_woman.png";
   };
-
-  const latestVitalsDate = Object.keys(patient.vitals).sort().reverse()[0];
-  const latestVitals = patient.vitals[latestVitalsDate] || {};
-
 
   useEffect(() => {
     if (!patient) return;

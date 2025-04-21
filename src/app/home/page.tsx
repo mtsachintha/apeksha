@@ -4,6 +4,7 @@ import { SetStateAction, useState, useEffect } from "react";
 import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes, FaPlus } from "react-icons/fa";
 import { useCallback } from "react";
 import { useDebounce } from "use-debounce";
+import { Dialog } from '@headlessui/react'; // Install with: npm install @headlessui/react
 
 interface PatientData {
   _id: string;
@@ -193,6 +194,16 @@ export default function Home() {
   // Add this state
   const [isSearching, setIsSearching] = useState(false);
 
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const [newPatient, setNewPatient] = useState({
+    patient_id: '', // Reset this field
+    first_name: '',
+    last_name: '',
+    gender: '',
+    city: '',
+    ward: 'Ward-1',
+  });
 
   //Filters
 
@@ -233,31 +244,98 @@ export default function Home() {
 
   const applyFilters = () => {
     let filtered = [...patients];
-  
-  // Apply search first
-  if (debouncedSearchQuery) {
-    filtered = filtered.filter(patient => {
-      if (searchType === "name") {
-        const fullName = `${patient.basic_details.first_name} ${patient.basic_details.last_name}`.toLowerCase();
-        return fullName.includes(debouncedSearchQuery.toLowerCase());
-      }
-      return patient.basic_details.ward.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
-    });
-  }
+
+    // Apply search first
+    if (debouncedSearchQuery) {
+      filtered = filtered.filter(patient => {
+        if (searchType === "name") {
+          const fullName = `${patient.basic_details.first_name} ${patient.basic_details.last_name}`.toLowerCase();
+          return fullName.includes(debouncedSearchQuery.toLowerCase());
+        }
+        return patient.basic_details.ward.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      });
+    }
 
 
-  filtered = filtered.filter(patient => (
-    (!activeFilters.wardNo || patient.basic_details.ward === activeFilters.wardNo) &&
-        (!activeFilters.gender || patient.basic_details.gender === activeFilters.gender) &&
-        (!activeFilters.location || patient.basic_details.city === activeFilters.location) &&
-        (!activeFilters.condition || patient.primary_diagnosis.cancer_type === activeFilters.condition) &&
-        (!activeFilters.status || patient.status === activeFilters.status)
-      )
+    filtered = filtered.filter(patient => (
+      (!activeFilters.wardNo || patient.basic_details.ward === activeFilters.wardNo) &&
+      (!activeFilters.gender || patient.basic_details.gender === activeFilters.gender) &&
+      (!activeFilters.location || patient.basic_details.city === activeFilters.location) &&
+      (!activeFilters.condition || patient.primary_diagnosis.cancer_type === activeFilters.condition) &&
+      (!activeFilters.status || patient.status === activeFilters.status)
+    )
     );
 
     setFilteredPatients(filtered);
     setIsFilterApplied(true);
     setCurrentPage(1);
+  };
+
+  const handleAddPatient = async () => {
+    try {
+      // Validate patient ID format
+      if (!/^[A-Z]{2,3}-\d{4,6}$/.test(newPatient.patient_id)) {
+        alert('Patient ID must be in format ABC-1234 (2-3 letters, hyphen, 4-6 numbers)');
+        return;
+      }
+  
+      const response = await fetch('/api/patients/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          patient_id: newPatient.patient_id,
+          basic_details: {
+            first_name: newPatient.first_name,
+            last_name: newPatient.last_name,
+            gender: newPatient.gender,
+            city: newPatient.city,
+            ward: newPatient.ward,
+            email: "temp@example.com", // Temporary valid email
+          }
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.text();
+        let errorMessage = 'Failed to add patient';
+        
+        try {
+          const parsedError = JSON.parse(errorData);
+          errorMessage = parsedError.error || errorMessage;
+        } catch {
+          errorMessage = errorData || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
+  
+      const result = await response.json();
+  
+      // Refresh patient list
+      const res = await fetch("/api/patients", { cache: "no-store" });
+      const data = await res.json();
+      setPatients(data);
+      setFilteredPatients(data);
+      
+      // Reset form
+      setNewPatient({
+        patient_id: '',
+        first_name: '',
+        last_name: '',
+        gender: '',
+        city: '',
+        ward: 'Ward-1'
+      });
+      setIsAddDialogOpen(false);
+      
+      alert(`Patient added successfully! ID: ${result.data.patient_id}`);
+      
+    } catch (error: any) {
+      console.error('Error adding patient:', error);
+      alert(`Error: ${error.message}`);
+    }
   };
 
   //Filters End
@@ -301,7 +379,7 @@ export default function Home() {
       setIsFilterApplied(true);
     }
   }, []);
-  
+
   useEffect(() => {
     // Save filters to localStorage
     if (isFilterApplied) {
@@ -330,7 +408,10 @@ export default function Home() {
         />
         <div className="flex items-center space-x-4">
           {/* Add Record Button */}
-          <button className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full transition-colors duration-200">
+          <button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full transition-colors duration-200"
+          >
             <FaPlus className="text-sm" />
             <span>Add a Record</span>
           </button>
@@ -736,6 +817,99 @@ export default function Home() {
           </div>
         </div>
       </div>
+      <Dialog
+        open={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-md rounded bg-white p-6">
+            <Dialog.Title className="text-xl text-gray-900 font-bold mb-4">Add New Patient</Dialog.Title>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Patient ID*</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.patient_id}
+                  onChange={(e) => setNewPatient({ ...newPatient, patient_id: e.target.value })}
+                  placeholder="Enter unique patient ID"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.first_name}
+                  onChange={(e) => setNewPatient({ ...newPatient, first_name: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.last_name}
+                  onChange={(e) => setNewPatient({ ...newPatient, last_name: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">City</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.city}
+                  onChange={(e) => setNewPatient({ ...newPatient, city: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Gender</label>
+                <select
+className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.gender}
+                  onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Ward</label>
+                <select
+className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.patient_id}
+                  onChange={(e) => setNewPatient({ ...newPatient, patient_id: e.target.value })}
+                >
+                  {Array.from({ length: 20 }, (_, i) => (
+                    <option key={i} value={`Ward-${i + 1}`}>Ward {i + 1}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                onClick={() => setIsAddDialogOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                onClick={handleAddPatient}
+              >
+                Add Patient
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 }
