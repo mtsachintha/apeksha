@@ -404,20 +404,20 @@ export default function Home() {
         <img
           src="/logo_main.png"
           alt="Logo"
-          className="h-12 hover:scale-105 cursor-pointer"
+          className="h-12 cursor-pointer"
         />
         <div className="flex items-center space-x-4">
           {/* Add Record Button */}
           <button
             onClick={() => setIsAddDialogOpen(true)}
-            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full transition-colors duration-200"
+            className="flex items-center space-x-2 cursor-pointer bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full transition-colors duration-200"
           >
             <FaPlus className="text-sm" />
             <span>Add a Record</span>
           </button>
 
           {/* Existing User Profile */}
-          <div className="flex items-center space-x-2 bg-blue-800 px-4 py-2 rounded-full">
+          <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full">
             <FaUserMd className="text-xl" />
           </div>
         </div>

@@ -505,8 +505,8 @@ const DetailsPage = () => {
         <img
           src="/logo_main.png"
           alt="Logo"
-          className="h-12 transition-all hover:scale-105 hover:rotate-2 duration-300"
-        />
+          className="h-12 transition-all pointer- cursor-pointer"
+          />
         <div className="flex items-center space-x-4 bg-blue-800 px-4 py-2 rounded-full">
           <FaUserMd className="text-xl" />
           <span className="text-md font-semibold">Dr. John Doe</span>
