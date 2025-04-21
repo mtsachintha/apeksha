@@ -420,6 +420,33 @@ const DetailsPage = () => {
     return gender === "male" ? "/old_man.png" : "/old_woman.png";
   };
 
+  const handleSave = async () => {
+    await replacePatient(patient);
+  };
+
+  async function replacePatient(patient: any) {
+    try {
+      const response = await fetch('/api/patients/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(patient),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to replace patient');
+      }
+  
+      return data;
+    } catch (error) {
+      console.error('Error replacing patient:', error);
+      throw error;
+    }
+  }  
+
   useEffect(() => {
     if (!patient) return;
 
@@ -963,7 +990,7 @@ const DetailsPage = () => {
 
                     <div className="flex justify-end space-x-2 mt-4">
                       <button
-                        onClick={updateSurgeries}
+                        onClick={handleSave}
                         className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
                       >
                         <Check size={20} className="mr-2" />
