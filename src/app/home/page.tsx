@@ -278,25 +278,64 @@ export default function Home() {
         alert('Patient ID must be in format ABC-1234 (2-3 letters, hyphen, 4-6 numbers)');
         return;
       }
-  
+
+      // Create complete patient object with empty/default values
+      const completePatient = {
+        patient_id: newPatient.patient_id,
+        basic_details: {
+          first_name: newPatient.first_name,
+          last_name: newPatient.last_name,
+          gender: newPatient.gender,
+          city: newPatient.city,
+          ward: newPatient.ward,
+          email: "temp@example.com", // Temporary valid email
+          // Add other fields with empty/default values
+          title: '',
+          birthday: null,
+          phone: '',
+          address: '',
+          notes: ''
+        },
+        status: 'Active',
+        medical_history: {
+          smoking: 'Unknown',
+          alcohol: 'Unknown',
+          chronic_illness: [],
+          allergies: [],
+          previous_surgeries: []
+        },
+        family_background: [],
+        vitals: new Map(),
+        primary_diagnosis: {
+          cancer_type: '',
+          sub_category: '',
+          stage: 'Unknown',
+          date_assessed: null,
+          findings: '',
+          suspicious_lumps: '',
+          pain_assessment: 'Unknown',
+          consulting_doctor: '',
+          notes: ''
+        },
+        lab_results: {
+          blood_tests: [],
+          imaging_studies: [],
+          other_investigations: []
+        },
+        medications: [],
+        surgeries: [],
+        patient_log: [],
+        complications_and_risks: []
+      };
+
       const response = await fetch('/api/patients/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          patient_id: newPatient.patient_id,
-          basic_details: {
-            first_name: newPatient.first_name,
-            last_name: newPatient.last_name,
-            gender: newPatient.gender,
-            city: newPatient.city,
-            ward: newPatient.ward,
-            email: "temp@example.com", // Temporary valid email
-          }
-        }),
+        body: JSON.stringify(completePatient),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.text();
         let errorMessage = 'Failed to add patient';
@@ -310,9 +349,9 @@ export default function Home() {
         
         throw new Error(errorMessage);
       }
-  
+
       const result = await response.json();
-  
+
       // Refresh patient list
       const res = await fetch("/api/patients", { cache: "no-store" });
       const data = await res.json();

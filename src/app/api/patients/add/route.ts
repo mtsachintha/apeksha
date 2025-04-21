@@ -37,18 +37,9 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log('Creating new patient document...');
-    const newPatient = new Patient({
-      ...requestData,
-      status: "Active",
-      medical_history: {
-        smoking: "Unknown",
-        alcohol: "Unknown",
-        chronic_illness: [],
-        allergies: [],
-        previous_surgeries: []
-      }
-    });
+    // In your add API endpoint
+console.log('Creating new patient document...');
+const newPatient = new Patient(requestData); // Just use the complete data from frontend
 
     console.log('Saving patient to database...');
     const savedPatient = await newPatient.save();

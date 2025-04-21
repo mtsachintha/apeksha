@@ -62,6 +62,10 @@ const PatientSchema = new mongoose.Schema({
       type: String,
       maxlength: [200, 'Address cannot exceed 200 characters']
     },
+    city: {
+      type: String,
+      maxlength: [200, 'City cannot exceed 100 characters']
+    },
     notes: {
       type: String,
       maxlength: [500, 'Notes cannot exceed 500 characters']
