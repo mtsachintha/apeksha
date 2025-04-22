@@ -1,7 +1,10 @@
 "use client";
 import Link from "next/link";
 import { SetStateAction, useState, useEffect } from "react";
-import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes } from "react-icons/fa";
+import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes, FaPlus } from "react-icons/fa";
+import { useCallback } from "react";
+import { useDebounce } from "use-debounce";
+import { Dialog } from '@headlessui/react'; // Install with: npm install @headlessui/react
 
 interface PatientData {
   _id: string;
@@ -16,6 +19,9 @@ interface PatientData {
     email: string;
     address: string;
     notes: string;
+    city: string;
+    blood: string;
+
   };
   patient_id: string;
   status: string;
@@ -28,15 +34,17 @@ interface PatientData {
   };
   family_background: { disease: string; relation: string }[];
   vitals: {
-    weight: number;
-    height: number;
-    blood_pressure: string;
-    pulse: number;
-    temperature: number;
-    date: string;
-    general_observations: string[];
-    special_notes: string;
-  }[];
+    [date: string]: {
+      weight: number;
+      height: number;
+      blood_pressure: string;
+      pulse: number;
+      temperature: number;
+      general_observations: string[];
+      special_notes: string;
+    };
+  };
+
   primary_diagnosis: {
     cancer_type: string;
     sub_category: string;
@@ -49,9 +57,9 @@ interface PatientData {
     notes: string;
   };
   lab_results: {
-    blood_tests: string[];
-    imaging_studies: string[];
-    other_investigations: string[];
+    blood_tests: { name: string; result: string }[];
+    imaging_studies: { name: string; result: string }[];
+    other_investigations: { name: string; result: string }[];
   };
   medications: { name: string; dosage: string; start_date: string; end_date: string }[];
   surgeries: { name: string; date: string; notes: string; complication: string }[];
@@ -64,13 +72,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    type: "",
-    wardNo: "",
-    location: "",
-    gender: "",
-    condition: "",
-  });
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -86,6 +87,308 @@ export default function Home() {
   const handleSearchQueryChange = (e: { target: { value: SetStateAction<string> } }) => {
     setSearchQuery(e.target.value);
   };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  const getPaginationRange = (totalItems: number, currentPage: number) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const maxVisiblePages = 4; // Show up to 4 pages before adding ellipsis
+
+    if (totalPages <= maxVisiblePages + 1) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    if (currentPage <= maxVisiblePages) {
+      return [...Array.from({ length: maxVisiblePages }, (_, i) => i + 1), '...', totalPages];
+    }
+
+    if (currentPage > totalPages - maxVisiblePages) {
+      return [1, '...', ...Array.from({ length: maxVisiblePages }, (_, i) => totalPages - maxVisiblePages + i + 1)];
+    }
+
+    return [1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages];
+  };
+
+  // Calculate paginated patients
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const paginationRange = getPaginationRange(patients.length, currentPage);
+
+  const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
+
+  const currentPatients = filteredPatients.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
+
+  const filterPatients = useCallback(() => {
+    if (!debouncedSearchQuery) {
+      setFilteredPatients(patients);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const filtered = patients.filter(patient => {
+      // Search by name
+      if (searchType === "name") {
+        const fullName = `${patient.basic_details.first_name} ${patient.basic_details.last_name}`.toLowerCase();
+        return fullName.includes(debouncedSearchQuery.toLowerCase());
+      }
+
+      // Search by ward
+      if (searchType === "wardNo") {
+        return patient.basic_details.ward.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      }
+
+      // Simulate async search (remove timeout in real implementation)
+      const timer = setTimeout(() => {
+        const filtered = patients.filter(patient => {
+          // ... existing filter logic ...
+        });
+
+        setFilteredPatients(filtered);
+        setIsSearching(false);
+      }, 200);
+
+      return () => clearTimeout(timer);
+
+      return true;
+    });
+
+    setFilteredPatients(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
+  }, [patients, debouncedSearchQuery, searchType]);
+
+  // Add these helper functions
+  const highlightMatch = (text: string, query: string) => {
+    if (!query) return text;
+
+    const regex = new RegExp(`(${escapeRegExp(query)})`, 'gi');
+    return text.replace(regex, '<span class="bg-yellow-200">$1</span>');
+  };
+
+  const escapeRegExp = (string: string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  };
+
+  // For React components, use this safe version:
+  const HighlightText = ({ text, query }: { text: string; query: string }) => {
+    if (!query) return <>{text}</>;
+
+    const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'gi'));
+    return (
+      <>
+        {parts.map((part, i) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <span key={i} className="bg-yellow-200">{part}</span>
+          ) : (
+            <span key={i}>{part}</span>
+          )
+        )}
+      </>
+    );
+  };
+
+  // Add this state
+  const [isSearching, setIsSearching] = useState(false);
+
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  const [newPatient, setNewPatient] = useState({
+    patient_id: '', // Reset this field
+    first_name: '',
+    last_name: '',
+    gender: '',
+    city: '',
+    ward: 'Ward-1',
+  });
+
+  //Filters
+
+  interface Filters {
+    type: string;
+    wardNo: string;
+    location: string;
+    gender: string;
+    condition: string;
+    status: string;
+  }
+
+  // Update your state hooks
+  const [filters, setFilters] = useState<Filters>({
+    type: "",
+    wardNo: "",
+    location: "",
+    gender: "",
+    condition: "",
+    status: ""
+  });
+
+  const [activeFilters, setActiveFilters] = useState<Filters>({ ...filters });
+  const [isFilterApplied, setIsFilterApplied] = useState(false);
+
+  const getFilterOptions = () => {
+    const options = {
+      wards: Array.from(new Set(patients.map(p => p.basic_details.ward))),
+      genders: Array.from(new Set(patients.map(p => p.basic_details.gender))),
+      statuses: Array.from(new Set(patients.map(p => p.status))),
+      locations: Array.from(new Set(patients.map(p => p.basic_details.city))),
+      conditions: Array.from(new Set(patients.map(p => p.primary_diagnosis.cancer_type)))
+    };
+    return options;
+  };
+
+  const filterOptions = getFilterOptions();
+
+  const applyFilters = () => {
+    let filtered = [...patients];
+
+    // Apply search first
+    if (debouncedSearchQuery) {
+      filtered = filtered.filter(patient => {
+        if (searchType === "name") {
+          const fullName = `${patient.basic_details.first_name} ${patient.basic_details.last_name}`.toLowerCase();
+          return fullName.includes(debouncedSearchQuery.toLowerCase());
+        }
+        return patient.basic_details.ward.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
+      });
+    }
+
+
+    filtered = filtered.filter(patient => (
+      (!activeFilters.wardNo || patient.basic_details.ward === activeFilters.wardNo) &&
+      (!activeFilters.gender || patient.basic_details.gender === activeFilters.gender) &&
+      (!activeFilters.location || patient.basic_details.city === activeFilters.location) &&
+      (!activeFilters.condition || patient.primary_diagnosis.cancer_type === activeFilters.condition) &&
+      (!activeFilters.status || patient.status === activeFilters.status)
+    )
+    );
+
+    setFilteredPatients(filtered);
+    setIsFilterApplied(true);
+    setCurrentPage(1);
+  };
+
+  const handleAddPatient = async () => {
+    try {
+      // Validate patient ID format
+      if (!/^[A-Z]{2,3}-\d{4,6}$/.test(newPatient.patient_id)) {
+        alert('Patient ID must be in format ABC-1234 (2-3 letters, hyphen, 4-6 numbers)');
+        return;
+      }
+
+      // Create complete patient object with empty/default values
+      const completePatient = {
+        patient_id: newPatient.patient_id,
+        basic_details: {
+          first_name: newPatient.first_name,
+          last_name: newPatient.last_name,
+          gender: newPatient.gender,
+          city: newPatient.city,
+          ward: newPatient.ward,
+          email: "temp@example.com", // Temporary valid email
+          // Add other fields with empty/default values
+          title: '',
+          birthday: null,
+          phone: '',
+          address: '',
+          notes: ''
+        },
+        status: 'Active',
+        medical_history: {
+          smoking: 'Unknown',
+          alcohol: 'Unknown',
+          chronic_illness: [],
+          allergies: [],
+          previous_surgeries: []
+        },
+        family_background: [],
+        vitals: new Map(),
+        primary_diagnosis: {
+          cancer_type: '',
+          sub_category: '',
+          stage: 'Unknown',
+          date_assessed: null,
+          findings: '',
+          suspicious_lumps: '',
+          pain_assessment: 'Unknown',
+          consulting_doctor: '',
+          notes: ''
+        },
+        lab_results: {
+          blood_tests: [],
+          imaging_studies: [],
+          other_investigations: []
+        },
+        medications: [],
+        surgeries: [],
+        patient_log: [],
+        complications_and_risks: []
+      };
+
+      const response = await fetch('/api/patients/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(completePatient),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        let errorMessage = 'Failed to add patient';
+        
+        try {
+          const parsedError = JSON.parse(errorData);
+          errorMessage = parsedError.error || errorMessage;
+        } catch {
+          errorMessage = errorData || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+
+      // Refresh patient list
+      const res = await fetch("/api/patients", { cache: "no-store" });
+      const data = await res.json();
+      setPatients(data);
+      setFilteredPatients(data);
+      
+      // Reset form
+      setNewPatient({
+        patient_id: '',
+        first_name: '',
+        last_name: '',
+        gender: '',
+        city: '',
+        ward: 'Ward-1'
+      });
+      setIsAddDialogOpen(false);
+      
+      alert(`Patient added successfully! ID: ${result.data.patient_id}`);
+      
+    } catch (error: any) {
+      console.error('Error adding patient:', error);
+      alert(`Error: ${error.message}`);
+    }
+  };
+
+  //Filters End
+
+  useEffect(() => {
+    filterPatients();
+  }, [filterPatients]);
+
+  // Initialize filteredPatients when data loads
+  useEffect(() => {
+    if (patients.length) {
+      setFilteredPatients(patients);
+    }
+  }, [patients]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,6 +408,25 @@ export default function Home() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Load filters from localStorage
+    const savedFilters = localStorage.getItem('patientFilters');
+    if (savedFilters) {
+      const parsed = JSON.parse(savedFilters);
+      setFilters(parsed);
+      setActiveFilters(parsed);
+      setIsFilterApplied(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save filters to localStorage
+    if (isFilterApplied) {
+      localStorage.setItem('patientFilters', JSON.stringify(activeFilters));
+    }
+  }, [activeFilters, isFilterApplied]);
+
+
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
@@ -113,33 +435,30 @@ export default function Home() {
     return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   }
 
-  const wardList = [
-    { wardNo: "WRD0012", fullName: "Fredrik North De Silva", lastUpdated: "2 mins ago" },
-    { wardNo: "WRD0013", fullName: "Alice Johnson", lastUpdated: "5 mins ago" },
-    { wardNo: "WRD0014", fullName: "John Doe", lastUpdated: "10 mins ago" },
-    { wardNo: "WRD0015", fullName: "Sarah Lee", lastUpdated: "15 mins ago" },
-    { wardNo: "WRD0016", fullName: "Michael Brown", lastUpdated: "20 mins ago" },
-    { wardNo: "WRD0017", fullName: "Emily Davis", lastUpdated: "25 mins ago" },
-    { wardNo: "WRD0012", fullName: "Fredrik North De Silva", lastUpdated: "2 mins ago" },
-    { wardNo: "WRD0013", fullName: "Alice Johnson", lastUpdated: "5 mins ago" },
-    { wardNo: "WRD0014", fullName: "John Doe", lastUpdated: "10 mins ago" },
-    { wardNo: "WRD0015", fullName: "Sarah Lee", lastUpdated: "15 mins ago" },
-    { wardNo: "WRD0016", fullName: "Michael Brown", lastUpdated: "20 mins ago" },
-    { wardNo: "WRD0017", fullName: "Emily Davis", lastUpdated: "25 mins ago" },
-  ];
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-gray-800 to-blue-400 text-white px-6 py-4 flex justify-between items-center shadow-xl">
+      <header className="bg-gradient-to-r from-blue-100 to-blue-300 text-white px-6 py-4 flex justify-between items-center shadow-xl">
         <img
           src="/logo_main.png"
           alt="Logo"
-          className="h-12 hover:scale-105 cursor-pointer"
+          className="h-12 cursor-pointer"
         />
-        <div className="flex items-center space-x-4 bg-blue-900/30 px-4 py-2 rounded-full">
-          <FaUserMd className="text-xl" />
-          <span className="text-md font-semibold">Dr. John Doe</span>
+        <div className="flex items-center space-x-4">
+          {/* Add Record Button */}
+          <button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="flex items-center space-x-2 cursor-pointer bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full transition-colors duration-200"
+          >
+            <FaPlus className="text-sm" />
+            <span>Add a Record</span>
+          </button>
+
+          {/* Existing User Profile */}
+          <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full">
+            <FaUserMd className="text-xl" />
+          </div>
         </div>
       </header>
 
@@ -164,6 +483,11 @@ export default function Home() {
               onChange={handleSearchQueryChange}
             />
             <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
+            {isSearching && (
+              <div className="absolute right-3 top-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              </div>
+            )}
           </div>
 
           {/* Search Type Radio */}
@@ -177,7 +501,7 @@ export default function Home() {
                 onChange={handleSearchTypeChange}
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500"
               />
-              Ward No
+              WardNo
             </label>
             <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-md hover:bg-gray-100 transition-colors">
               <input
@@ -193,25 +517,59 @@ export default function Home() {
           </div>
 
           {/* Dropdown Filters */}
-          {["Type", "Ward No", "Location", "Gender", "Condition"].map((label) => (
-            <div key={label} className="relative mt-4 group">
+          {[
+            { key: 'wardNo', label: 'Ward No', options: filterOptions.wards },
+            { key: 'gender', label: 'Gender', options: filterOptions.genders },
+            { key: 'location', label: 'Location', options: filterOptions.locations },
+            { key: 'condition', label: 'Condition', options: filterOptions.conditions },
+            { key: 'status', label: 'Status', options: filterOptions.statuses }
+          ].map((filter) => (
+            <div key={filter.key} className="relative mt-4 group">
               <select
                 className="block w-full p-3 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm appearance-none pr-10 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 group-hover:shadow-md"
-                onChange={(e) => handleFilterChange(label.toLowerCase().replace(' ', ''), e.target.value)}
+                value={filters[filter.key as keyof Filters]}
+                onChange={(e) => handleFilterChange(filter.key, e.target.value)}
               >
-                <option value="">Select {label}</option>
-                <option value="option1">{label} Option 1</option>
-                <option value="option2">{label} Option 2</option>
+                <option value="">Select {filter.label}</option>
+                {filter.options.map(option => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
               </select>
               <FaChevronDown className="absolute right-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors pointer-events-none" />
             </div>
           ))}
 
           {/* Buttons */}
-          <button className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0">
+          <button
+            onClick={() => {
+              setActiveFilters({ ...filters });
+              applyFilters();
+            }}
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+          >
             Apply Filters
           </button>
-          <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
+
+          <button
+            onClick={() => {
+              const resetFilters = {
+                type: "",
+                wardNo: "",
+                location: "",
+                gender: "",
+                condition: "",
+                status: ""
+              };
+              setFilters(resetFilters);
+              setActiveFilters(resetFilters);
+              setFilteredPatients(patients);
+              setIsFilterApplied(false);
+              setCurrentPage(1);
+            }}
+            className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors"
+          >
             Reset Filters
           </button>
         </div>
@@ -258,6 +616,11 @@ export default function Home() {
                     onChange={handleSearchQueryChange}
                   />
                   <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
+                  {isSearching && (
+                    <div className="absolute right-3 top-4">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Search */}
@@ -299,29 +662,68 @@ export default function Home() {
                 </div>
 
                 {/* Dropdown Filters */}
-                {["Type", "Ward No", "Location", "Gender", "Condition"].map((label) => (
-                  <div key={label} className="relative mt-4 group">
+                {[
+                  { key: 'wardNo', label: 'Ward No', options: filterOptions.wards },
+                  { key: 'gender', label: 'Gender', options: filterOptions.genders },
+                  { key: 'location', label: 'Location', options: filterOptions.locations },
+                  { key: 'condition', label: 'Condition', options: filterOptions.conditions },
+                  { key: 'status', label: 'Status', options: filterOptions.statuses }
+                ].map((filter) => (
+                  <div key={filter.key} className="relative mt-4 group">
                     <select
                       className="block w-full p-3 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm appearance-none pr-10 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 group-hover:shadow-md"
-                      onChange={(e) => handleFilterChange(label.toLowerCase().replace(' ', ''), e.target.value)}
+                      value={filters[filter.key as keyof Filters]}
+                      onChange={(e) => handleFilterChange(filter.key, e.target.value)}
                     >
-                      <option value="">Select {label}</option>
-                      <option value="option1">{label} Option 1</option>
-                      <option value="option2">{label} Option 2</option>
+                      <option value="">Select {filter.label}</option>
+                      {filter.options.map(option => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
                     </select>
                     <FaChevronDown className="absolute right-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors pointer-events-none" />
                   </div>
                 ))}
 
                 {/* Buttons */}
-                <button className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0">
+                // Apply Filters button
+                <button
+                  onClick={() => {
+                    setActiveFilters({ ...filters });
+                    applyFilters();
+                  }}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 p-3 text-white rounded-md mt-6 shadow-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+                >
                   Apply Filters
+                </button>
+
+// Reset Filters button
+                <button
+                  onClick={() => {
+                    const resetFilters = {
+                      type: "",
+                      wardNo: "",
+                      location: "",
+                      gender: "",
+                      condition: "",
+                      status: ""
+                    };
+                    setFilters(resetFilters);
+                    setActiveFilters(resetFilters);
+                    setFilteredPatients(patients);
+                    setIsFilterApplied(false);
+                    setCurrentPage(1);
+                  }}
+                  className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors"
+                >
+                  Reset Filters
                 </button>
                 <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
                   Reset Filters
                 </button>
-              </div>              
               </div>
+            </div>
           </div>
         )}
 
@@ -329,8 +731,25 @@ export default function Home() {
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Scrollable Cards */}
           <div className="flex-1 overflow-y-auto p-3">
+            <div className="mb-4 px-2 text-sm text-gray-600">
+              {debouncedSearchQuery && (
+                <div className="flex items-center">
+                  <FaSearch className="mr-2" />
+                  Showing {filteredPatients.length} patients matching "{debouncedSearchQuery}"
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setFilteredPatients(patients);
+                    }}
+                    className="ml-4 text-blue-600 hover:text-blue-800 flex items-center"
+                  >
+                    <FaTimes className="mr-1" /> Clear
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {patients.map((patient) => (
+              {currentPatients.map((patient) => (
                 <div
                   key={patient._id}
                   className="group relative p-4 bg-white border border-gray-200 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:border-blue-300 overflow-hidden flex flex-col"
@@ -341,7 +760,10 @@ export default function Home() {
                   <div className="flex flex-col flex-grow">
                     <div className="flex flex-col sm:flex-row items-start justify-between mb-2">
                       <span className="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        Ward No: {patient.basic_details.ward}
+                        Ward No: <HighlightText
+                          text={patient.basic_details.ward}
+                          query={searchType === 'wardNo' ? debouncedSearchQuery : ''}
+                        />
                       </span>
                       <div className="flex items-center text-xs text-gray-500 mt-1 sm:mt-0">
                         <FaClock className="mr-1" /> Last updated: {new Date().toLocaleDateString()}
@@ -349,7 +771,11 @@ export default function Home() {
                     </div>
 
                     <h4 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
-                      {patient.basic_details.title} {patient.basic_details.first_name} {patient.basic_details.last_name}
+                      {patient.basic_details.title}{' '}
+                      <HighlightText
+                        text={`${patient.basic_details.first_name} ${patient.basic_details.last_name}`}
+                        query={searchType === 'name' ? debouncedSearchQuery : ''}
+                      />
                     </h4>
 
                     <div className="flex-grow space-y-2 mb-3">
@@ -368,8 +794,8 @@ export default function Home() {
                       </p>
                       <p className="text-xs text-gray-700">
                         Status: <span className={`font-semibold ${patient.status === 'Discharged'
-                            ? 'text-red-600'
-                            : 'text-green-600'
+                          ? 'text-red-600'
+                          : 'text-green-600'
                           }`}>
                           {patient.status}
                         </span>
@@ -382,13 +808,13 @@ export default function Home() {
                     </div>
 
                     <div className="pt-3 border-t border-gray-200">
-                    <Link 
-  href={`/details/${patient.patient_id}`}
-  className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg"
->
-  View Patient
-  <FaArrowRight className="transition-transform group-hover:translate-x-1" />
-</Link>
+                      <Link
+                        href={`/details/${patient.patient_id}`}
+                        className="w-full bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-2 rounded-md flex items-center justify-center gap-2 text-sm hover:from-blue-600 hover:to-blue-500 transition-all shadow-md group-hover:shadow-lg"
+                      >
+                        View Patient
+                        <FaArrowRight className="transition-transform group-hover:translate-x-1" />
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -398,20 +824,131 @@ export default function Home() {
 
           {/* Fixed Pagination */}
           <div className="py-4 bg-white border-t border-gray-200 sticky bottom-0 flex justify-center space-x-2">
-            {[1, 2, 3, 4, "..."].map((num, index) => (
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+
+            {paginationRange.map((item, index) => (
               <button
                 key={index}
-                className={`px-5 py-2 rounded-lg font-medium transition-all duration-200 ${num === 1
-                    ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                onClick={() => typeof item === 'number' ? setCurrentPage(item) : null}
+                className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${item === currentPage
+                  ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  } ${typeof item !== 'number' ? 'cursor-default' : ''}`}
+                disabled={typeof item !== 'number'}
               >
-                {num}
+                {item}
               </button>
             ))}
+
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
           </div>
         </div>
       </div>
+      <Dialog
+        open={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
+        className="relative z-50"
+      >
+        <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="w-full max-w-md rounded bg-white p-6">
+            <Dialog.Title className="text-xl text-gray-900 font-bold mb-4">Add New Patient</Dialog.Title>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Patient ID*</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.patient_id}
+                  onChange={(e) => setNewPatient({ ...newPatient, patient_id: e.target.value })}
+                  placeholder="Enter unique patient ID"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">First Name</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.first_name}
+                  onChange={(e) => setNewPatient({ ...newPatient, first_name: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.last_name}
+                  onChange={(e) => setNewPatient({ ...newPatient, last_name: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">City</label>
+                <input
+                  type="text"
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.city}
+                  onChange={(e) => setNewPatient({ ...newPatient, city: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Gender</label>
+                <select
+className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.gender}
+                  onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Ward</label>
+                <select
+className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.patient_id}
+                  onChange={(e) => setNewPatient({ ...newPatient, patient_id: e.target.value })}
+                >
+                  {Array.from({ length: 20 }, (_, i) => (
+                    <option key={i} value={`Ward-${i + 1}`}>Ward {i + 1}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                onClick={() => setIsAddDialogOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                onClick={handleAddPatient}
+              >
+                Add Patient
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 }
