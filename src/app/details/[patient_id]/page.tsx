@@ -421,6 +421,7 @@ const DetailsPage = () => {
   };
 
   const handleSave = async () => {
+    updateMedications();
     await replacePatient(patient);
   };
 
@@ -1263,7 +1264,7 @@ const DetailsPage = () => {
                     {/* Button Section */}
                     <div className="flex justify-end space-x-2 mt-4">
                       <button
-                        onClick={updateSurgeries}
+                        onClick={handleSave}
                         className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
                       >
                         <Check size={20} className="mr-2" />
@@ -1354,7 +1355,7 @@ const DetailsPage = () => {
                         </button>
 
                         <button
-                          onClick={updateSurgeries}
+                          onClick={handleSave}
                           className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
                         >
                           <Save size={20} className="mr-2" />
@@ -1581,7 +1582,7 @@ const DetailsPage = () => {
 
                     <div className="flex justify-end space-x-2 mt-4">
                       <button
-                        onClick={updateSurgeries}
+                        onClick={handleSave}
                         className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
                       >
                         <Check size={20} className="mr-2" />
@@ -1962,7 +1963,7 @@ const DetailsPage = () => {
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
                     <button
-                      onClick={updateMedications}
+                      onClick={handleSave}
                       className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
                     >
                       <Check size={20} className="mr-2" />
@@ -2048,7 +2049,7 @@ const DetailsPage = () => {
                     </button>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
                     <button
-                      onClick={updateSurgeriesPerformed}
+                      onClick={handleSave}
                       className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
                     >
                       <Save size={20} className="mr-2" />
@@ -2133,11 +2134,11 @@ const DetailsPage = () => {
                         Add More
                       </button>
                       <button
-                        onClick={updatePatientRecords}
+                        onClick={handleSave}
                         className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
                       >
                         <Save size={20} className="mr-2" />
-                        Update
+                        Save
                       </button>
                     </div>
                   </div>
@@ -2233,11 +2234,11 @@ const DetailsPage = () => {
                         Add More
                       </button>
                       <button
-                        onClick={updateComplicationRecords}
+                        onClick={handleSave}
                         className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
                       >
                         <Save size={20} className="mr-2" />
-                        Update
+                        Save
                       </button>
                     </div>
                   </div>
