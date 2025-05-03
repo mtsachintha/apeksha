@@ -426,7 +426,7 @@ const handleAddPatient = async () => {
         <div className="hidden md:block bg-white w-72 p-5 shadow-xl overflow-y-auto">
           <h2 className="text-l font-bold text-gray-500 flex items-center gap-3 mb-6">
             <FaFilter className="text-gray-500" />
-            <span className="bg-gradient-to-r from-gray-500 to-gray-400 bg-clip-text text-transparent">
+            <span className="text-gray-500 bg-clip-text text-transparent">
               Filters
             </span>
           </h2>
