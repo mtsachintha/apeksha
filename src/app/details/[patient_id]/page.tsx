@@ -443,15 +443,15 @@ const DetailsPage = () => {
     setPatient((prev) =>
       prev && selectedDate
         ? {
-            ...prev,
-            vitals: {
-              ...prev.vitals,
-              [selectedDate]: {
-                ...prev.vitals?.[selectedDate],
-                [field]: value,
-              },
+          ...prev,
+          vitals: {
+            ...prev.vitals,
+            [selectedDate]: {
+              ...prev.vitals?.[selectedDate],
+              [field]: value,
             },
-          }
+          },
+        }
         : prev
     );
   };
@@ -562,7 +562,7 @@ const DetailsPage = () => {
   const handleSave = async () => {
     setIsSaving(true);
     setPreviousPatientState(patient); // Store current state for potential rollback
-  
+
     try {
       // Prepare all existing updates (unchanged)
       const updatedPatient = {
@@ -577,31 +577,48 @@ const DetailsPage = () => {
           previous_surgeries: previousSurgeries.filter(s => s.trim() !== "")
         },
         medications: medications
-        .filter(med => 
-          med.name.trim() !== "" || 
-          med.dosage.trim() !== "" || 
-          med.start_date.trim() !== "" || 
-          med.end_date.trim() !== ""
-        )
-        .map((med) => ({
-          name: med.name.trim(),
-          dosage: med.dosage.trim(),
-          start_date: med.start_date ? new Date(med.start_date).toISOString() : "",
-          end_date: med.end_date ? new Date(med.end_date).toISOString() : ""
-        })),
+          .filter(med =>
+            med.name.trim() !== "" ||
+            med.dosage.trim() !== "" ||
+            med.start_date.trim() !== "" ||
+            med.end_date.trim() !== ""
+          )
+          .map((med) => ({
+            name: med.name.trim(),
+            dosage: med.dosage.trim(),
+            start_date: med.start_date ? new Date(med.start_date).toISOString() : "",
+            end_date: med.end_date ? new Date(med.end_date).toISOString() : ""
+          })),
         surgeries: surgeriesPerformed
-        .filter(surgery => 
-          surgery.name.trim() !== "" || 
-          surgery.date.trim() !== "" || 
-          surgery.notes.trim() !== "" || 
-          surgery.complication.trim() !== ""
-        )
-        .map((surgery) => ({
-          name: surgery.name.trim(),
-          date: surgery.date ? new Date(surgery.date).toISOString() : "",
-          notes: surgery.notes.trim(),
-          complication: surgery.complication.trim()
-        })),
+          .filter(surgery =>
+            surgery.name.trim() !== "" ||
+            surgery.date.trim() !== "" ||
+            surgery.notes.trim() !== "" ||
+            surgery.complication.trim() !== ""
+          )
+          .map((surgery) => ({
+            name: surgery.name.trim(),
+            date: surgery.date ? new Date(surgery.date).toISOString() : "",
+            notes: surgery.notes.trim(),
+            complication: surgery.complication.trim()
+          })),
+        patient_log: patientRecords
+          .filter(record => record.date.trim() !== "" || record.note.trim() !== "")
+          .map(record => ({
+            date: record.date ? new Date(record.date).toISOString() : "",
+            note: record.note.trim()
+          })),
+        complications_and_risks: complicationRecords
+          .filter(record =>
+            record.date.trim() !== "" ||
+            record.complication.trim() !== "" ||
+            record.severity.trim() !== ""
+          )
+          .map(record => ({
+            date: record.date ? new Date(record.date).toISOString() : "",
+            complication: record.complication.trim(),
+            severity: record.severity.trim() || "normal" // Default to 'normal' if empty
+          })),
         lab_results: {
           ...patient.lab_results,
           blood_tests: bloodTests.filter(test => test.name.trim() !== "" || test.result.trim() !== ""),
@@ -624,10 +641,10 @@ const DetailsPage = () => {
           })
         }
       };
-  
+
       // Persist to server (unchanged)
       const response = await replacePatient(updatedPatient);
-  
+
       // Success handling (unchanged)
       toast.success("Patient data saved successfully");
       return response;
@@ -764,9 +781,9 @@ const DetailsPage = () => {
           alt="Logo"
           className="h-12 transition-all pointer- cursor-pointer"
         />
-        <div className="flex items-center space-x-4 bg-blue-800 px-4 py-2 rounded-full">
+        {/* Existing User Profile */}
+        <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full">
           <FaUserMd className="text-xl" />
-          <span className="text-md font-semibold">Dr. John Doe</span>
         </div>
       </header>
 
@@ -1218,13 +1235,58 @@ const DetailsPage = () => {
 
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1347,14 +1409,60 @@ const DetailsPage = () => {
                       </button>
                     </div>
 
-                    {/* Save Button */}
-                    <div className="flex justify-end">
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Save size={16} className="mr-2" />
-                        Save Medical History
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1439,13 +1547,62 @@ const DetailsPage = () => {
                           <PlusCircle size={20} className="mr-2" />
                           Add More
                         </button>
+                      </div>
 
+                      <div className="w-full border-t border-gray-300 mt-4"></div>
+
+                      <div className="flex justify-center mt-4 w-full">
                         <button
                           onClick={handleSave}
-                          className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                          disabled={isSaving}
+                          className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                              : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                            }`}
                         >
-                          <Save size={20} className="mr-2" />
-                          Save
+                          {isSaving ? (
+                            <>
+                              <svg
+                                className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="mr-2"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              Save
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -1753,13 +1910,58 @@ const DetailsPage = () => {
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1903,13 +2105,58 @@ const DetailsPage = () => {
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1928,47 +2175,47 @@ const DetailsPage = () => {
                         Observations
                       </h3>
                       <div className="flex items-center gap-2 ml-auto">
-                      <button
-  onClick={() => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    // Create new empty vitals entry
-    const newVitalsEntry = {
-      weight: 0,
-      height: 0,
-      blood_pressure: "",
-      pulse: 0,
-      temperature: 0,
-      general_observations: [""],
-      special_notes: ""
-    };
+                        <button
+                          onClick={() => {
+                            const today = new Date().toISOString().split('T')[0];
 
-    // Update patient object immediately
-    setPatient(prevPatient => ({
-      ...prevPatient,
-      vitals: {
-        ...prevPatient.vitals,
-        [today]: newVitalsEntry
-      }
-    }));
+                            // Create new empty vitals entry
+                            const newVitalsEntry = {
+                              weight: 0,
+                              height: 0,
+                              blood_pressure: "",
+                              pulse: 0,
+                              temperature: 0,
+                              general_observations: [""],
+                              special_notes: ""
+                            };
 
-    // Update local state
-    setSelectedDate(today);
-    setVitalsForm({
-      weight: "",
-      height: "",
-      blood_pressure: "",
-      pulse: "",
-      temperature: ""
-    });
-    setGeneralInspection([""]);
-    setSpecialNotes("");
-  }}
-  className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
->
-  <PlusCircle size={16} />
-  <span>New Entry</span>
-</button>
+                            // Update patient object immediately
+                            setPatient(prevPatient => ({
+                              ...prevPatient,
+                              vitals: {
+                                ...prevPatient.vitals,
+                                [today]: newVitalsEntry
+                              }
+                            }));
+
+                            // Update local state
+                            setSelectedDate(today);
+                            setVitalsForm({
+                              weight: "",
+                              height: "",
+                              blood_pressure: "",
+                              pulse: "",
+                              temperature: ""
+                            });
+                            setGeneralInspection([""]);
+                            setSpecialNotes("");
+                          }}
+                          className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                        >
+                          <PlusCircle size={16} />
+                          <span>New Entry</span>
+                        </button>
 
                         <select
                           className="border border-gray-300 rounded px-3 py-1 text-gray-700"
@@ -2117,13 +2364,58 @@ const DetailsPage = () => {
                     </div>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -2206,16 +2498,62 @@ const DetailsPage = () => {
                     </button>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
-                    <button
-                      onClick={handleSave}
-                      className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
-                    >
-                      <Check size={20} className="mr-2" />
-                      Save
-                    </button>
+                    <div className="flex justify-center mt-4 w-full">
+                      <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
+                      >
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-
               )}
 
               {activeSubSection === "suregries" && (
@@ -2292,13 +2630,60 @@ const DetailsPage = () => {
                       Add More
                     </button>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
-                    <button
-                      onClick={handleSave}
-                      className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
-                    >
-                      <Save size={20} className="mr-2" />
-                      Update
-                    </button>
+                    <div className="flex justify-center mt-4 w-full">
+                      <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
+                      >
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2377,12 +2762,60 @@ const DetailsPage = () => {
                         <PlusCircle size={20} className="mr-2" />
                         Add More
                       </button>
+                    </div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Save size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -2477,18 +2910,65 @@ const DetailsPage = () => {
                         <PlusCircle size={20} className="mr-2" />
                         Add More
                       </button>
+                    </div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Save size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
                 </div>
               )}
-
             </div>
           </div>
         )}
