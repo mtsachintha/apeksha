@@ -18,6 +18,13 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Client-side validation
+    if (!formData.username.trim() || !formData.password.trim()) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -27,42 +34,37 @@ const LoginPage = () => {
         headers: { 
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        credentials: 'include', // Important for cookies
+        body: JSON.stringify({
+          username: formData.username.trim(),
+          password: formData.password.trim()
+        }),
       });
 
-      // Check if response exists
-      if (!res) {
-        throw new Error("No response from server");
-      }
-
-      // Handle potential non-JSON responses
-      const text = await res.text();
-      let data;
-      try {
-        data = text ? JSON.parse(text) : {};
-      } catch (parseError) {
-        throw new Error("Invalid server response format");
-      }
+      const data = await res.json();
       
       if (!res.ok) {
-        throw new Error(data.message || "Login failed. Please try again.");
+        // Handle different error statuses specifically
+        if (res.status === 401) {
+          throw new Error(data.message || "Invalid username or password");
+        } else if (res.status === 400) {
+          throw new Error(data.message || "Validation error");
+        } else {
+          throw new Error(data.message || "Login failed. Please try again.");
+        }
       }
 
-      // Verify token exists in response
-      if (!data.token) {
-        throw new Error("Authentication token missing");
-      }
-
-      // Store token and redirect
-      if (typeof window !== "undefined") {
-        localStorage.setItem("token", data.token);
-      }
+      // Redirect to home page after successful login
       router.push("/home");
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Login failed";
       setError(errorMessage);
-      console.error("Login error:", err);
+      
+      // Log detailed error in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error("Login error details:", err);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -152,7 +154,7 @@ const LoginPage = () => {
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
               <Link 
-                href="/register"  // Changed from /request to /register for consistency
+                href="/register"
                 className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
               >
                 Register now
