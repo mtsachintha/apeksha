@@ -335,6 +335,25 @@ const handleAddPatient = async () => {
   }
 };
 
+
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/user', {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.user) {
+          setUser(data.user);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching user:", err);
+      });
+  }, []);
+
+
   //Filters End
 
   useEffect(() => {
@@ -414,9 +433,10 @@ const handleAddPatient = async () => {
           </button>
 
           {/* Existing User Profile */}
-          <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full">
-            <FaUserMd className="text-xl" />
-          </div>
+          <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full text-white">
+      <FaUserMd className="text-xl" />
+      {user?.username && <span className="text-sm font-medium">{user?.username}</span>}
+    </div>
         </div>
       </header>
 
@@ -426,7 +446,7 @@ const handleAddPatient = async () => {
         <div className="hidden md:block bg-white w-72 p-5 shadow-xl overflow-y-auto">
           <h2 className="text-l font-bold text-gray-500 flex items-center gap-3 mb-6">
             <FaFilter className="text-gray-500" />
-            <span className="text-gray-500 bg-clip-text text-transparent">
+            <span className="text-gray-500 bg-clip-text">
               Filters
             </span>
           </h2>

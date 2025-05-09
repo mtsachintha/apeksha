@@ -120,55 +120,47 @@ export default function AdminDashboard() {
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen font-sans relative">
-      {/* Logo */}
-      <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-10">
-        <Image 
-          src="/logo_main.png" 
-          alt="Logo" 
-          width={200} 
-          height={50} 
-          className="hover:scale-105 transition-transform duration-300"
-          priority
-        />
-      </div>
+            <header className="flex justify-between items-center mb-6 pt-16 sm:pt-6 w-full relative">
+  {/* Logo */}
+  <div className="absolute left-6">
+    <Image 
+      src="/logo_main.png" 
+      alt="Logo" 
+      width={200} 
+      height={50} 
+      className="hover:scale-105 transition-transform duration-300"
+      priority
+    />
+  </div>
 
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 pt-16 sm:pt-6">
-        <div className="flex flex-col sm:flex-row gap-4 w-full">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder="Search users..."
-              className="pl-10 pr-4 py-2 border rounded w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <FaSearch className="absolute left-3 top-3 text-gray-400" />
-          </div>
-          <div className="flex items-center gap-2">
-            <label className="font-medium whitespace-nowrap">Status:</label>
-            <select 
-              className="px-3 py-2 border rounded"
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPagination(prev => ({ ...prev, page: 1 }));
-              }}
-            >
-              <option value="All">All</option>
-              <option value="Waiting">Waiting</option>
-              <option value="Approved">Approved</option>
-              <option value="Rejected">Rejected</option>
-            </select>
-            <button 
-              onClick={fetchUsers}
-              className="p-2 text-gray-600 hover:text-gray-800"
-              title="Refresh"
-            >
-              <FaSync />
-            </button>
-          </div>
-        </div>
-      </header>
+  {/* Right side (Dropdown and Button) */}
+  <div className="flex items-center gap-4 ml-auto">
+    <div className="flex items-center gap-2">
+      <label className="font-medium text-gray-800 whitespace-nowrap">Status:</label>
+      <select 
+        className="px-3 py-2 text-gray-800 "
+        value={statusFilter}
+        onChange={(e) => {
+          setStatusFilter(e.target.value);
+          setPagination(prev => ({ ...prev, page: 1 }));
+        }}
+      >
+        <option value="All">All</option>
+        <option value="Waiting">Waiting</option>
+        <option value="Approved">Approved</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+      <button 
+        onClick={fetchUsers}
+        className="p-2 text-gray-600 hover:text-gray-800"
+        title="Refresh"
+      >
+        <FaSync />
+      </button>
+    </div>
+  </div>
+</header>
+
 
       <div className="bg-white rounded shadow overflow-hidden">
         {loading ? (
@@ -177,7 +169,7 @@ export default function AdminDashboard() {
           <div className="p-8 text-center">No users found</div>
         ) : (
           <>
-            <div className="hidden md:grid md:grid-cols-4 font-semibold border-b p-4">
+            <div className="hidden text-gray-800 md:grid md:grid-cols-4 font-semibold border-b p-4">
               <div>User Name / Full Name</div>
               <div>Position</div>
               <div>Actions</div>
@@ -190,21 +182,21 @@ export default function AdminDashboard() {
                 className="border-b p-4 grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-0"
               >
                 <div className="md:col-span-1">
-                  <div className="font-medium">{user.username}</div>
+                  <div className="font-medium text-gray-800">{user.username}</div>
                   <div className="text-gray-600 text-sm line-clamp-1">{user.fullName}</div>
                 </div>
                 <div className="text-sm text-gray-700 md:col-span-1">{user.position}</div>
                 <div className="flex gap-2 items-center md:col-span-1">
                   <button
                     onClick={() => handleStatusChange(user._id, 'Approved')}
-                    className="bg-green-400 hover:bg-green-500 text-white px-3 py-1 rounded text-sm"
+                    className="bg-green-400 hover:bg-green-300 text-white px-3 py-1 rounded text-sm"
                     disabled={user.status === 'Approved'}
                   >
                     Approve
                   </button>
                   <button
                     onClick={() => handleStatusChange(user._id, 'Rejected')}
-                    className="bg-red-300 hover:bg-red-400 text-white px-3 py-1 rounded text-sm"
+                    className="bg-red-400 hover:bg-red-300 text-white px-3 py-1 rounded text-sm"
                     disabled={user.status === 'Rejected'}
                   >
                     Reject

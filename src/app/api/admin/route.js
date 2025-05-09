@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import User from "../../models/User";
 import dbConnect from "../../utils/dbConnect";
 import { verifyAdmin } from "../../middleware/verifyAdmin";
-import { getUsernameFromCookies } from "../../utils/getUsernameFromCookies";
+import { getUsernameFromCookies } from "../../utils/getUserFromCookies";
 
 
 // Get all users (admin only)
