@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import User from "../../models/User";
 import dbConnect from "../../utils/dbConnect";
-import { verifyAdmin } from "../../middleware/verifyAdmin";
+import { verifyAdmin } from "../../utils/verifyAdmin";
 import { getUsernameFromCookies } from "../../utils/getUserFromCookies";
 
 

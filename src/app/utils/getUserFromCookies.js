@@ -1,43 +1,24 @@
+// utils/getUserFromCookies.js
 import jwt from "jsonwebtoken";
-import { getUserFromCookies } from "../utils/getUserFromCookies"; // Import getUserFromCookies
-import { NextResponse } from "next/server";
+import User from "../models/User";
+import { cookies } from "next/headers";
+import dbConnect from "../utils/dbConnect";
 
-export async function verifyAdmin() {
+export async function getUserFromCookies() {
   try {
-    // Get user from cookies
-    const user = await getUserFromCookies();
+    await dbConnect();
 
-    if (!user) {
-      return {
-        isValid: false,
-        response: NextResponse.json(
-          { success: false, message: "Authentication required" },
-          { status: 401 }
-        )
-      };
-    }
+    const token = cookies().get("token")?.value;
+    if (!token || !process.env.JWT_SECRET) return null;
 
-    // Check if user is an admin
-    if (user.position !== "Admin") {
-      return {
-        isValid: false,
-        response: NextResponse.json(
-          { success: false, message: "Admin access required" },
-          { status: 403 }
-        )
-      };
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    return { isValid: true, user };
+    // Exclude password for security
+    const user = await User.findById(decoded.userId).select("-password");
 
-  } catch (error) {
-    console.error("Admin verification error:", error);
-    return {
-      isValid: false,
-      response: NextResponse.json(
-        { success: false, message: "Invalid or expired token" },
-        { status: 401 }
-      )
-    };
+    return user || null;
+  } catch (err) {
+    console.error("getUserFromCookies error:", err);
+    return null;
   }
 }
