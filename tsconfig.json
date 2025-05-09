@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/api/auth/register/route.js", "src/app/utils/dbConnect.js", "src/app/api/patients/[patient_id]/add/route.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/api/auth/register/route.js", "src/app/utils/dbConnect.js", "src/app/api/patients/[patient_id]/add/route.js", "src/app/api/admin/route.js", "src/app/api/auth/username/route.js"],
   "exclude": ["node_modules"]
 }
