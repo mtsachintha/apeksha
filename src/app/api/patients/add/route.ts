@@ -1,49 +1,56 @@
+// app/api/patients/add/route.ts
 import { NextResponse } from 'next/server';
 import Patient from "../../../models/Patient";
 import connectDB from "../../../utils/dbConnect";
-
+import mongoose from 'mongoose';
 
 export async function POST(request: Request) {
-  console.log('Received request to add patient');
-  
   try {
-    console.log('Connecting to database...');
+    // Connect to database
     await connectDB();
-    console.log('Database connected successfully');
-
-    console.log('Parsing request body...');
+    
+    // Parse request data
     const requestData = await request.json();
-    console.log('Request data:', requestData);
+    console.log("Received data:", JSON.stringify(requestData, null, 2));
 
-    // Validate required fields
-    if (!requestData.patient_id) {
-      console.log('Validation failed - missing patient_id');
+    // Minimal validation
+    if (!requestData?.patient_id) {
       return NextResponse.json(
         { success: false, error: "Patient ID is required" },
         { status: 400 }
       );
     }
 
-    console.log('Checking for existing patient with ID:', requestData.patient_id);
+    // Check for existing patient
     const existingPatient = await Patient.findOne({ 
       patient_id: requestData.patient_id 
     });
     
     if (existingPatient) {
-      console.log('Patient ID already exists');
       return NextResponse.json(
         { success: false, error: "Patient ID already exists" },
         { status: 400 }
       );
     }
 
-    // In your add API endpoint
-console.log('Creating new patient document...');
-const newPatient = new Patient(requestData); // Just use the complete data from frontend
+    // Create minimal patient document
+    const patientDoc = {
+      patient_id: requestData.patient_id,
+      status: 'Active',
+      basic_details: {
+        first_name: requestData.basic_details?.first_name || '',
+        last_name: requestData.basic_details?.last_name || '',
+        gender: requestData.basic_details?.gender || '',
+        ward: requestData.basic_details?.ward || 'Ward-1',
+        email: requestData.basic_details?.email || 'temp@example.com',
+        city: requestData.basic_details?.city || ''
+      }
+    };
 
-    console.log('Saving patient to database...');
+    console.log("Creating patient with:", JSON.stringify(patientDoc, null, 2));
+    
+    const newPatient = new Patient(patientDoc);
     const savedPatient = await newPatient.save();
-    console.log('Patient saved successfully:', savedPatient);
     
     return NextResponse.json(
       { success: true, data: savedPatient },
@@ -51,12 +58,30 @@ const newPatient = new Patient(requestData); // Just use the complete data from 
     );
 
   } catch (error: any) {
-    console.error('SERVER ERROR DETAILS:', error);
+    console.error("Full error:", error);
+    
+    // Special handling for Mongoose validation errors
+    if (error instanceof mongoose.Error.ValidationError) {
+      const errors = Object.values(error.errors).map((err: any) => ({
+        field: err.path,
+        message: err.message
+      }));
+      
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: "Validation failed",
+          validationErrors: errors 
+        },
+        { status: 400 }
+      );
+    }
+    
+    // For all other errors
     return NextResponse.json(
       { 
         success: false, 
-        error: "Internal server error",
-        details: process.env.NODE_ENV === "development" ? error.message : undefined,
+        error: error.message || "Internal server error",
         stack: process.env.NODE_ENV === "development" ? error.stack : undefined
       },
       { status: 500 }

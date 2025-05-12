@@ -5,6 +5,8 @@ import Patient from "../../models/Patient";
 import { useParams } from 'next/navigation';
 import React, { useState, useEffect } from "react";
 import { PlusCircle, Trash, Save, Check, BriefcaseMedical, SquareActivity } from "lucide-react";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import { FaUserMd, FaChevronDown, FaArrowRight, FaCalendarAlt, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 
 
@@ -139,7 +141,6 @@ const DetailsPage = () => {
         setLoading(false);
       }
     };
-
     fetchPatient();
   }, [params.patient_id]); // Re-fetch when patient_id changes
 
@@ -149,13 +150,19 @@ const DetailsPage = () => {
 
 
   // Family History
-  const [familyHistory, setFamilyHistory] = useState([{ condition: "", relation: "" }]);
+  const [familyHistory, setFamilyHistory] = useState([{ disease: "", relation: "" }]);
   const addFamilyRecord = () => {
-    setFamilyHistory([...familyHistory, { condition: "", relation: "" }]);
+    setFamilyHistory([...familyHistory, { disease: "", relation: "" }]);
   };
   const removeFamilyRecord = (index: number) => {
     setFamilyHistory(familyHistory.filter((_, i) => i !== index));
   };
+
+  useEffect(() => {
+    if (patient?.family_background) {
+      setFamilyHistory(patient.family_background);
+    }
+  }, [patient?.family_background]); // Add dependency array
 
   const [medications, setMedications] = useState(patient.medications || []);
 
@@ -278,44 +285,101 @@ const DetailsPage = () => {
 
 
 
-  //chronicIllnesses
-  const [chronicIllnesses, setChronicIllnesses] = useState([""]);
+
+  // Medical History
+
+  const [chronicIllnesses, setChronicIllnesses] = useState<string[]>(['']);
+  const [allergies, setAllergies] = useState<string[]>(['']);
+  const [previousSurgeries, setPreviousSurgeries] = useState<string[]>(['']);
+
+  // Load existing data when patient changes
+  useEffect(() => {
+    if (patient?.medical_history) {
+      setChronicIllnesses(
+        patient.medical_history.chronic_illness?.length > 0
+          ? [...patient.medical_history.chronic_illness, '']
+          : ['']
+      );
+      setAllergies(
+        patient.medical_history.allergies?.length > 0
+          ? [...patient.medical_history.allergies, '']
+          : ['']
+      );
+      setPreviousSurgeries(
+        patient.medical_history.previous_surgeries?.length > 0
+          ? [...patient.medical_history.previous_surgeries, '']
+          : ['']
+      );
+    }
+  }, [patient]);
+
+  // Chronic Illnesses
   const addIllness = () => {
-    setChronicIllnesses([...chronicIllnesses, ""]);
+    setChronicIllnesses([...chronicIllnesses, '']);
   };
+
   const removeIllness = (index: number) => {
-    setChronicIllnesses(chronicIllnesses.filter((_, i) => i !== index));
-  };
-  const updateIllnesses = () => {
-    console.log("Updated illnesses:", chronicIllnesses);
+    const newIllnesses = chronicIllnesses.filter((_, i) => i !== index);
+    setChronicIllnesses(newIllnesses.length > 0 ? newIllnesses : ['']);
   };
 
-  //allergies
-  const [allergies, setAllergies] = useState([""]);
+  const updateIllness = (index: number, value: string) => {
+    const newIllnesses = [...chronicIllnesses];
+    newIllnesses[index] = value;
+    setChronicIllnesses(newIllnesses);
+  };
 
+  // Allergies
   const addAllergy = () => {
-    setAllergies([...allergies, ""]);
+    setAllergies([...allergies, '']);
   };
 
   const removeAllergy = (index: number) => {
-    setAllergies(allergies.filter((_, i) => i !== index));
+    const newAllergies = allergies.filter((_, i) => i !== index);
+    setAllergies(newAllergies.length > 0 ? newAllergies : ['']);
   };
 
-  const updateAllergies = () => {
-    console.log("Updated illnesses:", allergies);
+  const updateAllergy = (index: number, value: string) => {
+    const newAllergies = [...allergies];
+    newAllergies[index] = value;
+    setAllergies(newAllergies);
   };
 
-  //surgeries
-  const [previousSurgeries, setPreviousSurgeries] = useState([""]);
+  // Previous Surgeries
   const addSurgery = () => {
-    setPreviousSurgeries([...previousSurgeries, ""]);
+    setPreviousSurgeries([...previousSurgeries, '']);
   };
+
   const removeSurgery = (index: number) => {
-    setPreviousSurgeries(previousSurgeries.filter((_, i) => i !== index));
+    const newSurgeries = previousSurgeries.filter((_, i) => i !== index);
+    setPreviousSurgeries(newSurgeries.length > 0 ? newSurgeries : ['']);
   };
-  const updateSurgeries = () => {
-    // Add your update logic here
+
+  const updateSurgery = (index: number, value: string) => {
+    const newSurgeries = [...previousSurgeries];
+    newSurgeries[index] = value;
+    setPreviousSurgeries(newSurgeries);
   };
+
+  // Save all medical history
+  const saveMedicalHistory = () => {
+    const nonEmptyIllnesses = chronicIllnesses.filter(i => i.trim() !== '');
+    const nonEmptyAllergies = allergies.filter(a => a.trim() !== '');
+    const nonEmptySurgeries = previousSurgeries.filter(s => s.trim() !== '');
+
+    setPatient({
+      ...patient,
+      medical_history: {
+        ...patient.medical_history,
+        chronic_illness: nonEmptyIllnesses,
+        allergies: nonEmptyAllergies,
+        previous_surgeries: nonEmptySurgeries
+      }
+    });
+  };
+
+
+
 
   // Blood Tests
   const [bloodTests, setBloodTests] = useState([{ name: "", result: "" }]);
@@ -375,7 +439,31 @@ const DetailsPage = () => {
   const [specialNotes, setSpecialNotes] = useState("");
   const latestVitalsDate = patient?.vitals ? Object.keys(patient.vitals).sort().reverse()[0] : "";
   const latestVitals = (patient?.vitals?.[latestVitalsDate] || {});
+  const handleVitalsChange = (field: string, value: string | number) => {
+    setPatient((prev) =>
+      prev && selectedDate
+        ? {
+          ...prev,
+          vitals: {
+            ...prev.vitals,
+            [selectedDate]: {
+              ...prev.vitals?.[selectedDate],
+              [field]: value,
+            },
+          },
+        }
+        : prev
+    );
+  };
 
+
+  const [vitalsForm, setVitalsForm] = useState({
+    weight: "",
+    height: "",
+    blood_pressure: "",
+    pulse: "",
+    temperature: ""
+  });
 
   // General Inspection
   const [generalInspection, setGeneralInspection] = useState([""]);
@@ -420,8 +508,155 @@ const DetailsPage = () => {
     return gender === "male" ? "/old_man.png" : "/old_woman.png";
   };
 
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [previousPatientState, setPreviousPatientState] = useState<Patient>({
+    _id: '',
+    patient_id: '',
+    status: '',
+    basic_details: {
+      title: '',
+      first_name: '',
+      last_name: '',
+      gender: '',
+      birthday: '',
+      ward: '',
+      phone: '',
+      email: '',
+      address: '',
+      notes: '',
+      city: '',
+      blood: '',
+    },
+    medical_history: {
+      smoking: '',
+      alcohol: '',
+      chronic_illness: [],
+      allergies: [],
+      previous_surgeries: [],
+    },
+    family_background: [],
+    vitals: {},
+    primary_diagnosis: {
+      cancer_type: '',
+      sub_category: '',
+      stage: '',
+      date_assessed: '',
+      findings: '',
+      suspicious_lumps: '',
+      pain_assessment: '',
+      consulting_doctor: '',
+      notes: '',
+    },
+    lab_results: {
+      blood_tests: [],
+      imaging_studies: [],
+      other_investigations: [],
+    },
+    medications: [],
+    surgeries: [],
+    patient_log: [],
+    complications_and_risks: [],
+  });
+
   const handleSave = async () => {
-    await replacePatient(patient);
+    setIsSaving(true);
+    setPreviousPatientState(patient); // Store current state for potential rollback
+
+    try {
+      // Prepare all existing updates (unchanged)
+      const updatedPatient = {
+        ...patient,
+        family_background: familyHistory.filter(record =>
+          record.disease.trim() !== "" || record.relation.trim() !== ""
+        ),
+        medical_history: {
+          ...patient.medical_history,
+          chronic_illness: chronicIllnesses.filter(i => i.trim() !== ""),
+          allergies: allergies.filter(a => a.trim() !== ""),
+          previous_surgeries: previousSurgeries.filter(s => s.trim() !== "")
+        },
+        medications: medications
+          .filter(med =>
+            med.name.trim() !== "" ||
+            med.dosage.trim() !== "" ||
+            med.start_date.trim() !== "" ||
+            med.end_date.trim() !== ""
+          )
+          .map((med) => ({
+            name: med.name.trim(),
+            dosage: med.dosage.trim(),
+            start_date: med.start_date ? new Date(med.start_date).toISOString() : "",
+            end_date: med.end_date ? new Date(med.end_date).toISOString() : ""
+          })),
+        surgeries: surgeriesPerformed
+          .filter(surgery =>
+            surgery.name.trim() !== "" ||
+            surgery.date.trim() !== "" ||
+            surgery.notes.trim() !== "" ||
+            surgery.complication.trim() !== ""
+          )
+          .map((surgery) => ({
+            name: surgery.name.trim(),
+            date: surgery.date ? new Date(surgery.date).toISOString() : "",
+            notes: surgery.notes.trim(),
+            complication: surgery.complication.trim()
+          })),
+        patient_log: patientRecords
+          .filter(record => record.date.trim() !== "" || record.note.trim() !== "")
+          .map(record => ({
+            date: record.date ? new Date(record.date).toISOString() : "",
+            note: record.note.trim()
+          })),
+        complications_and_risks: complicationRecords
+          .filter(record =>
+            record.date.trim() !== "" ||
+            record.complication.trim() !== "" ||
+            record.severity.trim() !== ""
+          )
+          .map(record => ({
+            date: record.date ? new Date(record.date).toISOString() : "",
+            complication: record.complication.trim(),
+            severity: record.severity.trim() || "normal" // Default to 'normal' if empty
+          })),
+        lab_results: {
+          ...patient.lab_results,
+          blood_tests: bloodTests.filter(test => test.name.trim() !== "" || test.result.trim() !== ""),
+          imaging_studies: imagingStudies.filter(study => study.name.trim() !== "" || study.result.trim() !== ""),
+          other_investigations: otherInvestigations.filter(investigation => investigation.name.trim() !== "" || investigation.result.trim() !== "")
+        },
+        // Add vitals integration while preserving existing structure
+        vitals: {
+          ...patient.vitals, // Preserve existing vitals
+          ...(selectedDate && { // Only add if we have a selected date
+            [selectedDate]: {
+              weight: vitals.weight || 0,
+              height: vitals.height || 0,
+              blood_pressure: vitals.blood_pressure || "",
+              pulse: vitals.pulse || 0,
+              temperature: vitals.temperature || 0,
+              general_observations: generalInspection.filter(obs => obs.trim() !== ""),
+              special_notes: specialNotes || ""
+            }
+          })
+        }
+      };
+
+      // Persist to server (unchanged)
+      const response = await replacePatient(updatedPatient);
+
+      // Success handling (unchanged)
+      toast.success("Patient data saved successfully");
+      return response;
+    } catch (error) {
+      // Revert on error (unchanged)
+      setPatient(previousPatientState);
+      toast.error("Failed to save patient data");
+      console.error("Save error:", error);
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   async function replacePatient(patient: any) {
@@ -433,19 +668,19 @@ const DetailsPage = () => {
         },
         body: JSON.stringify(patient),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to replace patient');
       }
-  
+
       return data;
     } catch (error) {
       console.error('Error replacing patient:', error);
       throw error;
     }
-  }  
+  }
 
   useEffect(() => {
     if (!patient) return;
@@ -488,6 +723,18 @@ const DetailsPage = () => {
       setSpecialNotes(v.special_notes || "");
     }
   }, [selectedDate, patient.vitals]);
+
+  useEffect(() => {
+    if (activeSubSection === "vitalsigns" && patient?.vitals) {
+      const dates = Object.keys(patient.vitals);
+      if (dates.length > 0) {
+        const latestDate = dates.sort().reverse()[0];
+        if (!selectedDate || !patient.vitals[selectedDate]) {
+          setSelectedDate(latestDate);
+        }
+      }
+    }
+  }, [activeSubSection, patient?.vitals]);
 
 
   if (loading) {
@@ -533,10 +780,10 @@ const DetailsPage = () => {
           src="/logo_main.png"
           alt="Logo"
           className="h-12 transition-all pointer- cursor-pointer"
-          />
-        <div className="flex items-center space-x-4 bg-blue-800 px-4 py-2 rounded-full">
+        />
+        {/* Existing User Profile */}
+        <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full">
           <FaUserMd className="text-xl" />
-          <span className="text-md font-semibold">Dr. John Doe</span>
         </div>
       </header>
 
@@ -988,13 +1235,58 @@ const DetailsPage = () => {
 
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
                         onClick={handleSave}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1005,269 +1297,172 @@ const DetailsPage = () => {
               {activeSubSection === "social" && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                   <div className="p-6">
-                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                      </svg>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-6">
                       Medical History
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div>
-                        <fieldset className="space-y-3">
-                          <legend className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"
-                              />
-                            </svg>
-                            Smoking
-                          </legend>
-                          <div className="space-y-2">
-                            {['Non Smoker', 'Ex Smoker', 'Smoker'].map((option) => (
-                              <label key={option} className="flex items-center space-x-3 text-gray-700">
-                                <input
-                                  type="radio"
-                                  name="smoking"
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                  checked={patient?.medical_history.smoking === option}
-                                  onChange={() =>
-                                    setPatient((prev) =>
-                                      prev
-                                        ? {
-                                          ...prev,
-                                          medical_history: {
-                                            ...prev.medical_history,
-                                            smoking: option,
-                                          },
-                                        }
-                                        : prev
-                                    )
-                                  }
-                                />
-                                <span>{option}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </fieldset>
-                      </div>
+                    {/* Chronic Illnesses Section */}
+                    <div className="mb-8">
+                      <h4 className="text-md font-medium text-gray-800 mb-3">
+                        Chronic Illnesses
+                      </h4>
 
-                      <div>
-                        <fieldset className="space-y-3">
-                          <legend className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                            <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                              />
-                            </svg>
-                            Alcohol
-                          </legend>
-                          <div className="space-y-2">
-                            {['Non Drinker', 'Ex Drinker', 'Drinker'].map((option) => (
-                              <label key={option} className="flex items-center space-x-3 text-gray-700">
-                                <input
-                                  type="radio"
-                                  name="alcohol"
-                                  className="h-4 w-4 text-blue-600 focus:ring-blue-500"
-                                  checked={patient?.medical_history.alcohol === option}
-                                  onChange={() =>
-                                    setPatient((prev) =>
-                                      prev
-                                        ? {
-                                          ...prev,
-                                          medical_history: {
-                                            ...prev.medical_history,
-                                            alcohol: option,
-                                          },
-                                        }
-                                        : prev
-                                    )
-                                  }
-                                />
-                                <span>{option}</span>
-                              </label>
-                            ))}
-                          </div>
-                        </fieldset>
-                      </div>
-                    </div>
-
-
-                    <div className="mt-8 space-y-6">
-                      {/* Chronic Illnesses */}
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                          </svg>
-                          Chronic Illnesses
-                        </h4>
-
+                      <div className="space-y-2">
                         {chronicIllnesses.map((illness, index) => (
-                          <div key={index} className="flex items-center space-x-2 mb-2">
+                          <div key={`illness-${index}`} className="flex items-center gap-2">
                             <input
                               type="text"
-                              placeholder="Enter chronic illness"
                               value={illness}
-                              onChange={(e) => {
-                                const newIllnesses = [...chronicIllnesses];
-                                newIllnesses[index] = e.target.value;
-                                setChronicIllnesses(newIllnesses);
-                              }}
-                              className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              onChange={(e) => updateIllness(index, e.target.value)}
+                              placeholder="Enter chronic illness"
+                              className="flex-1 text-gray-900 border-gray-300 border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
                             />
-                            {chronicIllnesses.length > 1 && (
-                              <button
-                                onClick={() => removeIllness(index)}
-                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
+                            <button
+                              onClick={() => removeIllness(index)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded"
+                              disabled={chronicIllnesses.length <= 1}
+                            >
+                              <Trash size={16} />
+                            </button>
                           </div>
                         ))}
-
-                        <div className="flex justify-end space-x-2 mt-4">
-                          <button
-                            onClick={addIllness}
-                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                          >
-                            <PlusCircle size={20} className="mr-2" />
-                            Add More
-                          </button>
-
-                          <button
-                            onClick={updateIllnesses}
-                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                          >
-                            <Save size={20} className="mr-2" />
-                            Update
-                          </button>
-                        </div>
                       </div>
 
-                      {/* Allergies */}
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                          </svg>
-                          Allergies
-                        </h4>
-
-                        {allergies.map((allergy, index) => (
-                          <div key={index} className="flex items-center space-x-2 mb-2">
-                            <input
-                              type="text"
-                              placeholder="Enter allergy"
-                              value={allergy}
-                              onChange={(e) => {
-                                const newAllergies = [...allergies];
-                                newAllergies[index] = e.target.value;
-                                setAllergies(newAllergies);
-                              }}
-                              className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {allergies.length > 1 && (
-                              <button
-                                onClick={() => removeAllergy(index)}
-                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-
-                        <div className="flex justify-end space-x-2 mt-4">
-                          <button
-                            onClick={addAllergy}
-                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                          >
-                            <PlusCircle size={20} className="mr-2" />
-                            Add More
-                          </button>
-
-                          <button
-                            onClick={updateAllergies}
-                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                          >
-                            <Save size={20} className="mr-2" />
-                            Update
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Previous Surgeries */}
-                      <div>
-                        <h4 className="text-md font-medium text-gray-800 mb-3 flex items-center gap-2">
-                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                          </svg>
-                          Previous Surgeries
-                        </h4>
-
-                        {previousSurgeries.map((surgery, index) => (
-                          <div key={index} className="flex items-center space-x-2 mb-2">
-                            <input
-                              type="text"
-                              placeholder="Enter previous surgery"
-                              value={surgery}
-                              onChange={(e) => {
-                                const newSurgeries = [...previousSurgeries];
-                                newSurgeries[index] = e.target.value;
-                                setPreviousSurgeries(newSurgeries);
-                              }}
-                              className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            {previousSurgeries.length > 1 && (
-                              <button
-                                onClick={() => removeSurgery(index)}
-                                className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                              >
-                                <Trash size={18} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
-
-                        <div className="flex justify-end space-x-2 mt-4">
-                          <button
-                            onClick={addSurgery}
-                            className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                          >
-                            <PlusCircle size={20} className="mr-2" />
-                            Add More
-                          </button>
-
-                          <button
-                            onClick={updateSurgeries}
-                            className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                          >
-                            <Save size={20} className="mr-2" />
-                            Update
-                          </button>
-                        </div>
-                      </div>
+                      <button
+                        onClick={addIllness}
+                        className="mt-2 flex items-center text-blue-500 hover:text-blue-700"
+                      >
+                        <PlusCircle size={16} className="mr-1" />
+                        Add Illness
+                      </button>
                     </div>
 
-                    {/* Horizontal Divider */}
+                    {/* Allergies Section */}
+                    <div className="mb-8">
+                      <h4 className="text-md font-medium text-gray-800 mb-3">
+                        Allergies
+                      </h4>
+
+                      <div className="space-y-2">
+                        {allergies.map((allergy, index) => (
+                          <div key={`allergy-${index}`} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={allergy}
+                              onChange={(e) => updateAllergy(index, e.target.value)}
+                              placeholder="Enter allergy"
+                              className="flex-1 text-gray-900 border-gray-300 border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                              onClick={() => removeAllergy(index)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded"
+                              disabled={allergies.length <= 1}
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={addAllergy}
+                        className="mt-2 flex items-center text-blue-500 hover:text-blue-700"
+                      >
+                        <PlusCircle size={16} className="mr-1" />
+                        Add Allergy
+                      </button>
+                    </div>
+
+                    {/* Previous Surgeries Section */}
+                    <div className="mb-8">
+                      <h4 className="text-md font-medium text-gray-800 mb-3">
+                        Previous Surgeries
+                      </h4>
+
+                      <div className="space-y-2">
+                        {previousSurgeries.map((surgery, index) => (
+                          <div key={`surgery-${index}`} className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={surgery}
+                              onChange={(e) => updateSurgery(index, e.target.value)}
+                              placeholder="Enter previous surgery"
+                              className="flex-1 text-gray-900 border-gray-300 border rounded px-3 py-2 focus:ring-2 focus:ring-blue-500"
+                            />
+                            <button
+                              onClick={() => removeSurgery(index)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded"
+                              disabled={previousSurgeries.length <= 1}
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={addSurgery}
+                        className="mt-2 flex items-center text-blue-500 hover:text-blue-700"
+                      >
+                        <PlusCircle size={16} className="mr-1" />
+                        Add Surgery
+                      </button>
+                    </div>
+
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
-                    {/* Button Section */}
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
-                        onClick={updateSurgeries}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1304,10 +1499,10 @@ const DetailsPage = () => {
                                 <input
                                   type="text"
                                   placeholder="E.g., Diabetes"
-                                  value={record.condition}
+                                  value={record.disease}
                                   onChange={(e) => {
                                     const newHistory = [...familyHistory];
-                                    newHistory[index].condition = e.target.value;
+                                    newHistory[index].disease = e.target.value;
                                     setFamilyHistory(newHistory);
                                   }}
                                   className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -1352,13 +1547,62 @@ const DetailsPage = () => {
                           <PlusCircle size={20} className="mr-2" />
                           Add More
                         </button>
+                      </div>
 
+                      <div className="w-full border-t border-gray-300 mt-4"></div>
+
+                      <div className="flex justify-center mt-4 w-full">
                         <button
-                          onClick={updateSurgeries}
-                          className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                          onClick={handleSave}
+                          disabled={isSaving}
+                          className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                              : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                            }`}
                         >
-                          <Save size={20} className="mr-2" />
-                          Update
+                          {isSaving ? (
+                            <>
+                              <svg
+                                className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                              Saving...
+                            </>
+                          ) : (
+                            <>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="mr-2"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              Save
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>
@@ -1423,10 +1667,17 @@ const DetailsPage = () => {
                         <select
                           value={patient.primary_diagnosis.cancer_type || ''}
                           onChange={(e) =>
-                            setPatient((prev) => ({
-                              ...prev,
-                              cancerType: e.target.value,
-                            }))
+                            setPatient((prev) =>
+                              prev
+                                ? {
+                                  ...prev,
+                                  primary_diagnosis: {
+                                    ...prev.primary_diagnosis,
+                                    cancer_type: e.target.value,
+                                  },
+                                }
+                                : prev
+                            )
                           }
                           className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
@@ -1443,10 +1694,17 @@ const DetailsPage = () => {
                         <select
                           value={patient.primary_diagnosis.stage}
                           onChange={(e) =>
-                            setPatient((prev) => ({
-                              ...prev,
-                              stage: e.target.value,
-                            }))
+                            setPatient((prev) =>
+                              prev
+                                ? {
+                                  ...prev,
+                                  primary_diagnosis: {
+                                    ...prev.primary_diagnosis,
+                                    stage: e.target.value,
+                                  },
+                                }
+                                : prev
+                            )
                           }
                           className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
@@ -1463,13 +1721,17 @@ const DetailsPage = () => {
                         <select
                           value={patient.primary_diagnosis.sub_category}
                           onChange={(e) =>
-                            setPatient((prev) => ({
-                              ...prev,
-                              primary_diagnosis: {
-                                ...prev.primary_diagnosis,
-                                sub_category: e.target.value,
-                              },
-                            }))
+                            setPatient((prev) =>
+                              prev
+                                ? {
+                                  ...prev,
+                                  primary_diagnosis: {
+                                    ...prev.primary_diagnosis,
+                                    sub_category: e.target.value,
+                                  },
+                                }
+                                : prev
+                            )
                           }
                           className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
@@ -1490,13 +1752,17 @@ const DetailsPage = () => {
                               : ""
                           }
                           onChange={(e) =>
-                            setPatient((prev) => ({
-                              ...prev,
-                              primary_diagnosis: {
-                                ...prev.primary_diagnosis,
-                                date_assessed: e.target.value,
-                              },
-                            }))
+                            setPatient((prev) =>
+                              prev
+                                ? {
+                                  ...prev,
+                                  primary_diagnosis: {
+                                    ...prev.primary_diagnosis,
+                                    date_assessed: e.target.value,
+                                  },
+                                }
+                                : prev
+                            )
                           }
                           className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 bg-gray-50"
                         />
@@ -1518,6 +1784,19 @@ const DetailsPage = () => {
                           <textarea
                             defaultValue={patient.primary_diagnosis.findings}
                             placeholder="Enter findings"
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    primary_diagnosis: {
+                                      ...prev.primary_diagnosis,
+                                      findings: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
                             className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                           />
@@ -1528,6 +1807,19 @@ const DetailsPage = () => {
                           <textarea
                             defaultValue={patient.primary_diagnosis.suspicious_lumps}
                             placeholder="Enter details about suspicious lumps"
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    primary_diagnosis: {
+                                      ...prev.primary_diagnosis,
+                                      suspicious_lumps: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
                             className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                           />
@@ -1538,6 +1830,19 @@ const DetailsPage = () => {
                           <textarea
                             defaultValue={patient.primary_diagnosis.pain_assessment}
                             placeholder="Enter pain assessment details"
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    primary_diagnosis: {
+                                      ...prev.primary_diagnosis,
+                                      pain_assessment: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
                             className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
                           />
@@ -1560,6 +1865,19 @@ const DetailsPage = () => {
                           <input
                             type="text"
                             defaultValue={patient.primary_diagnosis.consulting_doctor}
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    primary_diagnosis: {
+                                      ...prev.primary_diagnosis,
+                                      consulting_doctor: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
                             className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 bg-gray-50"
                             readOnly
                           />
@@ -1569,6 +1887,19 @@ const DetailsPage = () => {
                           <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                           <textarea
                             defaultValue={patient.primary_diagnosis.notes}
+                            onChange={(e) =>
+                              setPatient((prev) =>
+                                prev
+                                  ? {
+                                    ...prev,
+                                    primary_diagnosis: {
+                                      ...prev.primary_diagnosis,
+                                      notes: e.target.value,
+                                    },
+                                  }
+                                  : prev
+                              )
+                            }
                             placeholder="Enter physician notes"
                             className="w-full border border-gray-300 text-gray-900 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             rows={3}
@@ -1579,13 +1910,58 @@ const DetailsPage = () => {
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
-                        onClick={updateSurgeries}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1629,6 +2005,13 @@ const DetailsPage = () => {
                           )}
                         </div>
                       ))}
+                      <button
+                        onClick={addBloodTest}
+                        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        <PlusCircle size={20} className="mr-2" />
+                        Add More
+                      </button>
                     </div>
                   </div>
 
@@ -1666,6 +2049,13 @@ const DetailsPage = () => {
                           )}
                         </div>
                       ))}
+                      <button
+                        onClick={addImagingStudy}
+                        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        <PlusCircle size={20} className="mr-2" />
+                        Add More
+                      </button>
                     </div>
                   </div>
 
@@ -1703,6 +2093,71 @@ const DetailsPage = () => {
                           )}
                         </div>
                       ))}
+                      <button
+                        onClick={addInvestigation}
+                        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+                      >
+                        <PlusCircle size={20} className="mr-2" />
+                        Add More
+                      </button>
+                    </div>
+
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+
+
+                    <div className="flex justify-center mt-4 w-full">
+                      <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
+                      >
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1719,18 +2174,62 @@ const DetailsPage = () => {
                         </svg>
                         Observations
                       </h3>
-                      <select
-                        className="border border-gray-300 rounded px-3 py-1 text-gray-700"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                      >
-                        <option value="">Select Date</option>
-                        {Object.keys(patient.vitals).map((date) => (
-                          <option key={date} value={date}>
-                            {date}
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex items-center gap-2 ml-auto">
+                        <button
+                          onClick={() => {
+                            const today = new Date().toISOString().split('T')[0];
+
+                            // Create new empty vitals entry
+                            const newVitalsEntry = {
+                              weight: 0,
+                              height: 0,
+                              blood_pressure: "",
+                              pulse: 0,
+                              temperature: 0,
+                              general_observations: [""],
+                              special_notes: ""
+                            };
+
+                            // Update patient object immediately
+                            setPatient(prevPatient => ({
+                              ...prevPatient,
+                              vitals: {
+                                ...prevPatient.vitals,
+                                [today]: newVitalsEntry
+                              }
+                            }));
+
+                            // Update local state
+                            setSelectedDate(today);
+                            setVitalsForm({
+                              weight: "",
+                              height: "",
+                              blood_pressure: "",
+                              pulse: "",
+                              temperature: ""
+                            });
+                            setGeneralInspection([""]);
+                            setSpecialNotes("");
+                          }}
+                          className="flex items-center gap-1 px-3 py-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition-colors"
+                        >
+                          <PlusCircle size={16} />
+                          <span>New Entry</span>
+                        </button>
+
+                        <select
+                          className="border border-gray-300 rounded px-3 py-1 text-gray-700"
+                          value={selectedDate}
+                          onChange={(e) => setSelectedDate(e.target.value)}
+                        >
+                          <option value="">Select Date</option>
+                          {Object.keys(patient.vitals).map((date) => (
+                            <option key={date} value={date}>
+                              {date}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
                     </div>
 
@@ -1748,8 +2247,8 @@ const DetailsPage = () => {
                             <input
                               type="text"
                               placeholder="e.g., 120/80"
+                              onChange={(e) => handleVitalsChange('blood_pressure', e.target.value)}
                               value={vitals.blood_pressure || ""}
-                              readOnly
                               className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
@@ -1758,8 +2257,8 @@ const DetailsPage = () => {
                             <input
                               type="text"
                               placeholder="e.g., 72 bpm"
+                              onChange={(e) => handleVitalsChange('pulse', e.target.value)}
                               value={vitals.pulse?.toString() || ""}
-                              readOnly
                               className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
@@ -1768,8 +2267,8 @@ const DetailsPage = () => {
                             <input
                               type="text"
                               placeholder="e.g., 98.6°F"
+                              onChange={(e) => handleVitalsChange('temperature', e.target.value)}
                               value={vitals.temperature?.toString() || ""}
-                              readOnly
                               className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                           </div>
@@ -1782,8 +2281,8 @@ const DetailsPage = () => {
                           <input
                             type="text"
                             placeholder="e.g., 120/80"
+                            onChange={(e) => handleVitalsChange('weight', e.target.value)}
                             value={vitals.weight?.toString() || ""}
-                            readOnly
                             className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
@@ -1792,6 +2291,7 @@ const DetailsPage = () => {
                           <input
                             type="text"
                             placeholder="e.g., 120/80"
+                            onChange={(e) => handleVitalsChange('height', e.target.value)}
                             value={vitals.height?.toString() || ""}
                             className="w-full text-gray-900 border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
@@ -1840,14 +2340,6 @@ const DetailsPage = () => {
                               <PlusCircle size={20} className="mr-2" />
                               Add More
                             </button>
-
-                            <button
-                              onClick={updateInspection}
-                              className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
-                            >
-                              <Save size={20} className="mr-2" />
-                              Update
-                            </button>
                           </div>
                         </div>
 
@@ -1872,13 +2364,58 @@ const DetailsPage = () => {
                     </div>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
-                    <div className="flex justify-end space-x-2 mt-4">
+                    <div className="flex justify-center mt-4 w-full">
                       <button
-                        onClick={updateSurgeries}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Check size={20} className="mr-2" />
-                        Save
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1961,16 +2498,62 @@ const DetailsPage = () => {
                     </button>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
 
-                    <button
-                      onClick={updateMedications}
-                      className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
-                    >
-                      <Check size={20} className="mr-2" />
-                      Save
-                    </button>
+                    <div className="flex justify-center mt-4 w-full">
+                      <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
+                      >
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-
               )}
 
               {activeSubSection === "suregries" && (
@@ -2047,13 +2630,60 @@ const DetailsPage = () => {
                       Add More
                     </button>
                     <div className="w-full border-t border-gray-300 mt-4"></div>
-                    <button
-                      onClick={updateSurgeriesPerformed}
-                      className="flex items-center justify-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors w-full"
-                    >
-                      <Save size={20} className="mr-2" />
-                      Update
-                    </button>
+                    <div className="flex justify-center mt-4 w-full">
+                      <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
+                      >
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2132,12 +2762,60 @@ const DetailsPage = () => {
                         <PlusCircle size={20} className="mr-2" />
                         Add More
                       </button>
+                    </div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+                    <div className="flex justify-center mt-4 w-full">
                       <button
-                        onClick={updatePatientRecords}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Save size={20} className="mr-2" />
-                        Update
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -2232,18 +2910,65 @@ const DetailsPage = () => {
                         <PlusCircle size={20} className="mr-2" />
                         Add More
                       </button>
+                    </div>
+                    <div className="w-full border-t border-gray-300 mt-4"></div>
+                    <div className="flex justify-center mt-4 w-full">
                       <button
-                        onClick={updateComplicationRecords}
-                        className="flex items-center text-green-600 px-4 py-2 rounded-md hover:bg-green-200 transition-colors"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
+                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
+                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+                          }`}
                       >
-                        <Save size={20} className="mr-2" />
-                        Update
+                        {isSaving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
+                            </svg>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="mr-2"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            Save
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>
                 </div>
               )}
-
             </div>
           </div>
         )}

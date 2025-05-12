@@ -202,7 +202,7 @@ export default function Home() {
     last_name: '',
     gender: '',
     city: '',
-    ward: 'Ward-1',
+    ward: '',
   });
 
   //Filters
@@ -271,111 +271,88 @@ export default function Home() {
     setCurrentPage(1);
   };
 
-  const handleAddPatient = async () => {
-    try {
-      // Validate patient ID format
-      if (!/^[A-Z]{2,3}-\d{4,6}$/.test(newPatient.patient_id)) {
-        alert('Patient ID must be in format ABC-1234 (2-3 letters, hyphen, 4-6 numbers)');
-        return;
+// In your page.tsx
+const handleAddPatient = async () => {
+  try {
+    // Prepare minimal required data
+    const patientData = {
+      patient_id: newPatient.patient_id,
+      basic_details: {
+        first_name: newPatient.first_name,
+        last_name: newPatient.last_name,
+        gender: newPatient.gender,
+        city: newPatient.city,
+        ward: newPatient.ward
       }
+    };
 
-      // Create complete patient object with empty/default values
-      const completePatient = {
-        patient_id: newPatient.patient_id,
-        basic_details: {
-          first_name: newPatient.first_name,
-          last_name: newPatient.last_name,
-          gender: newPatient.gender,
-          city: newPatient.city,
-          ward: newPatient.ward,
-          email: "temp@example.com", // Temporary valid email
-          // Add other fields with empty/default values
-          title: '',
-          birthday: null,
-          phone: '',
-          address: '',
-          notes: ''
-        },
-        status: 'Active',
-        medical_history: {
-          smoking: 'Unknown',
-          alcohol: 'Unknown',
-          chronic_illness: [],
-          allergies: [],
-          previous_surgeries: []
-        },
-        family_background: [],
-        vitals: new Map(),
-        primary_diagnosis: {
-          cancer_type: '',
-          sub_category: '',
-          stage: 'Unknown',
-          date_assessed: null,
-          findings: '',
-          suspicious_lumps: '',
-          pain_assessment: 'Unknown',
-          consulting_doctor: '',
-          notes: ''
-        },
-        lab_results: {
-          blood_tests: [],
-          imaging_studies: [],
-          other_investigations: []
-        },
-        medications: [],
-        surgeries: [],
-        patient_log: [],
-        complications_and_risks: []
-      };
+    console.log("Sending:", JSON.stringify(patientData, null, 2));
 
-      const response = await fetch('/api/patients/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(completePatient),
-      });
+    const response = await fetch('/api/patients/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(patientData),
+    });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        let errorMessage = 'Failed to add patient';
-        
-        try {
-          const parsedError = JSON.parse(errorData);
-          errorMessage = parsedError.error || errorMessage;
-        } catch {
-          errorMessage = errorData || errorMessage;
-        }
-        
-        throw new Error(errorMessage);
+    const result = await response.json();
+
+    if (!response.ok) {
+      // Handle validation errors
+      if (result.validationErrors) {
+        const errorMessages = result.validationErrors
+          .map((err: any) => `${err.field}: ${err.message}`)
+          .join('\n');
+        throw new Error(`Validation errors:\n${errorMessages}`);
       }
-
-      const result = await response.json();
-
-      // Refresh patient list
-      const res = await fetch("/api/patients", { cache: "no-store" });
-      const data = await res.json();
-      setPatients(data);
-      setFilteredPatients(data);
-      
-      // Reset form
-      setNewPatient({
-        patient_id: '',
-        first_name: '',
-        last_name: '',
-        gender: '',
-        city: '',
-        ward: 'Ward-1'
-      });
-      setIsAddDialogOpen(false);
-      
-      alert(`Patient added successfully! ID: ${result.data.patient_id}`);
-      
-    } catch (error: any) {
-      console.error('Error adding patient:', error);
-      alert(`Error: ${error.message}`);
+      throw new Error(result.error || 'Failed to add patient');
     }
-  };
+
+    // On success
+    alert(`Patient added successfully! ID: ${result.data.patient_id}`);
+    
+    // Refresh patient list
+    const res = await fetch("/api/patients", { cache: "no-store" });
+    const data = await res.json();
+    setPatients(data);
+    setFilteredPatients(data);
+    
+    // Reset form
+    setNewPatient({
+      patient_id: '',
+      first_name: '',
+      last_name: '',
+      gender: '',
+      city: '',
+      ward: 'Ward-1'
+    });
+    setIsAddDialogOpen(false);
+
+  } catch (error: any) {
+    console.error('Full error:', error);
+    alert(`Error: ${error.message}`);
+  }
+};
+
+
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    fetch('/api/auth/user', {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.user) {
+          setUser(data.user);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching user:", err);
+      });
+  }, []);
+
 
   //Filters End
 
@@ -456,9 +433,10 @@ export default function Home() {
           </button>
 
           {/* Existing User Profile */}
-          <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full">
-            <FaUserMd className="text-xl" />
-          </div>
+          <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full text-white">
+      <FaUserMd className="text-xl" />
+      {user?.username && <span className="text-sm font-medium">{user?.username}</span>}
+    </div>
         </div>
       </header>
 
@@ -468,7 +446,7 @@ export default function Home() {
         <div className="hidden md:block bg-white w-72 p-5 shadow-xl overflow-y-auto">
           <h2 className="text-l font-bold text-gray-500 flex items-center gap-3 mb-6">
             <FaFilter className="text-gray-500" />
-            <span className="bg-gradient-to-r from-gray-500 to-gray-400 bg-clip-text text-transparent">
+            <span className="text-gray-500 bg-clip-text">
               Filters
             </span>
           </h2>
@@ -871,7 +849,7 @@ export default function Home() {
                 <label className="block text-sm font-medium text-gray-700">Patient ID*</label>
                 <input
                   type="text"
-                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.patient_id}
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value={newPatient.patient_id}
                   onChange={(e) => setNewPatient({ ...newPatient, patient_id: e.target.value })}
                   placeholder="Enter unique patient ID"
                   required
@@ -881,7 +859,7 @@ export default function Home() {
                 <label className="block text-sm font-medium text-gray-700">First Name</label>
                 <input
                   type="text"
-                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.first_name}
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value={newPatient.first_name}
                   onChange={(e) => setNewPatient({ ...newPatient, first_name: e.target.value })}
                 />
               </div>
@@ -890,7 +868,7 @@ export default function Home() {
                 <label className="block text-sm font-medium text-gray-700">Last Name</label>
                 <input
                   type="text"
-                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.last_name}
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value={newPatient.last_name}
                   onChange={(e) => setNewPatient({ ...newPatient, last_name: e.target.value })}
                 />
               </div>
@@ -899,7 +877,7 @@ export default function Home() {
                 <label className="block text-sm font-medium text-gray-700">City</label>
                 <input
                   type="text"
-                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.city}
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value={newPatient.city}
                   onChange={(e) => setNewPatient({ ...newPatient, city: e.target.value })}
                 />
               </div>
@@ -907,7 +885,7 @@ export default function Home() {
               <div>
                 <label className="block text-sm font-medium text-gray-700">Gender</label>
                 <select
-className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.gender}
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" value={newPatient.gender}
                   onChange={(e) => setNewPatient({ ...newPatient, gender: e.target.value })}
                 >
                   <option value="">Select Gender</option>
@@ -920,8 +898,9 @@ className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gr
               <div>
                 <label className="block text-sm font-medium text-gray-700">Ward</label>
                 <select
-className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"                  value={newPatient.patient_id}
-                  onChange={(e) => setNewPatient({ ...newPatient, patient_id: e.target.value })}
+                  className="mt-1 block w-full px-3 py-2 text-gray-700 rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={newPatient.ward}
+                  onChange={(e) => setNewPatient({ ...newPatient, ward: e.target.value })}
                 >
                   {Array.from({ length: 20 }, (_, i) => (
                     <option key={i} value={`Ward-${i + 1}`}>Ward {i + 1}</option>

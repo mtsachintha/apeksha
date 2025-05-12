@@ -76,7 +76,6 @@ const PatientSchema = new mongoose.Schema({
     required: [true, 'Patient ID is required'],
     unique: true,
     index: true,
-    match: [/^[A-Z]{2,3}-\d{4,6}$/, 'Please use format: ABC-1234']
   },
   status: {
     type: String,
