@@ -1,10 +1,9 @@
 import dbConnect from "../../../utils/dbConnect";
 import Patient from "../../../models/Patient";
 import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
 
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { patient_id: string } }
 ) {
   const { patient_id } = params;
