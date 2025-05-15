@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import dbConnect from "@/utils/dbConnect";
-import User from "@/models/User";
+import { NextResponse } from "next/server.js";
+import dbConnect from './src/app/utils/dbConnect.js';
+import User from './src/app/models/User.js';
 import bcrypt from "bcryptjs";
 
 export async function POST(req) {

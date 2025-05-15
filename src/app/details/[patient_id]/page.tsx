@@ -124,6 +124,27 @@ const DetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [user, setUser] = useState<any>(null);
+  const [medicationsPage, setMedicationsPage] = useState(1);
+  const [surgeriesPage, setSurgeriesPage] = useState(1);
+  const [recordsPage, setRecordsPage] = useState(1);
+  const [complicationsPage, setComplicationsPage] = useState(1);
+
+  useEffect(() => {
+    fetch('/api/auth/user', {
+      credentials: 'include',
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.user) {
+          setUser(data.user);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching user:", err);
+      });
+  }, []);
+
   useEffect(() => {
     const fetchPatient = async () => {
       try {
@@ -782,9 +803,10 @@ const DetailsPage = () => {
           className="h-12 transition-all pointer- cursor-pointer"
         />
         {/* Existing User Profile */}
-        <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full">
-          <FaUserMd className="text-xl" />
-        </div>
+        <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full text-white">
+      <FaUserMd className="text-xl" />
+      {user?.username && <span className="text-sm font-medium">{user?.username}</span>}
+    </div>
       </header>
 
       {/* Patient Profile */}
@@ -2423,552 +2445,670 @@ const DetailsPage = () => {
               )}
 
               {activeSubSection === "medications" && (
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
-                  <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    Medications
-                  </h3>
+  <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
+    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      Medications
+    </h3>
 
-                  <div className="space-y-4">
-                    {medications.map((medication, index) => (
-                      <div key={index} className="p-4 border border-gray-300 rounded-md space-y-2">
-                        <input
-                          type="text"
-                          placeholder="E.g., Paracetamol"
-                          value={medication.name}
-                          onChange={(e) => {
-                            const updated = [...medications];
-                            updated[index].name = e.target.value;
-                            setMedications(updated);
-                          }}
-                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <input
-                          type="text"
-                          placeholder="E.g., 500mg"
-                          value={medication.dosage}
-                          onChange={(e) => {
-                            const updated = [...medications];
-                            updated[index].dosage = e.target.value;
-                            setMedications(updated);
-                          }}
-                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <input
-                          type="date"
-                          value={medication.start_date?.slice(0, 10) || ''}
-                          onChange={(e) => {
-                            const updated = [...medications];
-                            updated[index].start_date = e.target.value;
-                            setMedications(updated);
-                          }}
-                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <input
-                          type="date"
-                          value={medication.end_date?.slice(0, 10) || ''}
-                          onChange={(e) => {
-                            const updated = [...medications];
-                            updated[index].end_date = e.target.value;
-                            setMedications(updated);
-                          }}
-                          className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        {medications.length > 1 && (
-                          <button
-                            onClick={() => removeMedication(index)}
-                            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors w-full text-center"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 flex flex-col space-y-2">
-                    <button
-                      onClick={addMedication}
-                      className="flex items-center justify-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors w-full"
-                    >
-                      <PlusCircle size={20} className="mr-2" />
-                      Add More
-                    </button>
-                    <div className="w-full border-t border-gray-300 mt-4"></div>
-
-                    <div className="flex justify-center mt-4 w-full">
-                      <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
-                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
-                          }`}
-                      >
-                        {isSaving ? (
-                          <>
-                            <svg
-                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
-                            </svg>
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="mr-2"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Save
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+    {/* Paginated Medications List */}
+    <div className="space-y-4">
+      {medications
+        .slice((medicationsPage - 1) * 5, medicationsPage * 5)
+        .map((medication, index) => {
+          const actualIndex = (medicationsPage - 1) * 5 + index;
+          return (
+            <div key={actualIndex} className="p-4 border border-gray-300 rounded-md space-y-2">
+              <input
+                type="text"
+                placeholder="E.g., Paracetamol"
+                value={medication.name}
+                onChange={(e) => {
+                  const updated = [...medications];
+                  updated[actualIndex].name = e.target.value;
+                  setMedications(updated);
+                }}
+                className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <input
+                type="text"
+                placeholder="E.g., 500mg"
+                value={medication.dosage}
+                onChange={(e) => {
+                  const updated = [...medications];
+                  updated[actualIndex].dosage = e.target.value;
+                  setMedications(updated);
+                }}
+                className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <input
+                type="date"
+                value={medication.start_date?.slice(0, 10) || ''}
+                onChange={(e) => {
+                  const updated = [...medications];
+                  updated[actualIndex].start_date = e.target.value;
+                  setMedications(updated);
+                }}
+                className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <input
+                type="date"
+                value={medication.end_date?.slice(0, 10) || ''}
+                onChange={(e) => {
+                  const updated = [...medications];
+                  updated[actualIndex].end_date = e.target.value;
+                  setMedications(updated);
+                }}
+                className="w-full border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              {medications.length > 1 && (
+                <button
+                  onClick={() => removeMedication(actualIndex)}
+                  className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors w-full text-center"
+                >
+                  Remove
+                </button>
               )}
+            </div>
+          );
+        })}
+    </div>
+
+    {/* Pagination Controls */}
+    <div className="flex justify-between items-center mt-4">
+      <button
+        onClick={() => setMedicationsPage(p => Math.max(p - 1, 1))}
+        disabled={medicationsPage === 1}
+        className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+      <span className="text-sm text-gray-600">
+        Page {medicationsPage} of {Math.ceil(medications.length / 5)}
+      </span>
+      <button
+        onClick={() => setMedicationsPage(p => 
+          p * 5 < medications.length ? p + 1 : p
+        )}
+        disabled={medicationsPage * 5 >= medications.length}
+        className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+    </div>
+
+    <div className="mt-4 flex flex-col space-y-2">
+      <button
+        onClick={addMedication}
+        className="flex items-center justify-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors w-full"
+      >
+        <PlusCircle size={20} className="mr-2" />
+        Add More
+      </button>
+      <div className="w-full border-t border-gray-300 mt-4"></div>
+
+      <div className="flex justify-center mt-4 w-full">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${
+            isSaving
+              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+              : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+          }`}
+        >
+          {isSaving ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-2"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Save
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
               {activeSubSection === "suregries" && (
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
-                  <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    Surgeries Performed
-                  </h3>
+  <div className="bg-white rounded-lg shadow-sm overflow-hidden p-6">
+    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+      </svg>
+      Surgeries Performed
+    </h3>
 
-                  <div className="space-y-4">
-                    {surgeriesPerformed.map((surgery, index) => (
-                      <div key={index} className="p-4 border border-gray-300 rounded-md space-y-2">
-                        <input
-                          type="text"
-                          placeholder="E.g., Appendectomy"
-                          value={surgery.name}
-                          onChange={(e) => {
-                            const updated = [...surgeriesPerformed];
-                            updated[index].name = e.target.value;
-                            setSurgeriesPerformed(updated);
-                          }}
-                          className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <input
-                          type="date"
-                          value={surgery.date?.slice(0, 10) || ''}
-                          onChange={(e) => {
-                            const updated = [...surgeriesPerformed];
-                            updated[index].date = e.target.value;
-                            setSurgeriesPerformed(updated);
-                          }}
-                          className="w-ful text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        <textarea
-                          placeholder="Notes"
-                          value={surgery.notes}
-                          onChange={(e) => {
-                            const updated = [...surgeriesPerformed];
-                            updated[index].notes = e.target.value;
-                            setSurgeriesPerformed(updated);
-                          }}
-                          className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        ></textarea>
-                        <textarea
-                          placeholder="Complications"
-                          value={surgery.complication}
-                          onChange={(e) => {
-                            const updated = [...surgeriesPerformed];
-                            updated[index].complication = e.target.value;
-                            setSurgeriesPerformed(updated);
-                          }}
-                          className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        ></textarea>
-                        {surgeriesPerformed.length > 1 && (
-                          <button
-                            onClick={() => removeSurgeryPerformed(index)}
-                            className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors w-full text-center"
-                          >
-                            Remove
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 flex flex-col space-y-2">
-                    <button
-                      onClick={addSurgeryPerformed}
-                      className="flex items-center justify-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors w-full"
-                    >
-                      <PlusCircle size={20} className="mr-2" />
-                      Add More
-                    </button>
-                    <div className="w-full border-t border-gray-300 mt-4"></div>
-                    <div className="flex justify-center mt-4 w-full">
-                      <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
-                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
-                          }`}
-                      >
-                        {isSaving ? (
-                          <>
-                            <svg
-                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
-                            </svg>
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="mr-2"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Save
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+    {/* Paginated Surgeries List */}
+    <div className="space-y-4">
+      {surgeriesPerformed
+        .slice((surgeriesPage - 1) * 5, surgeriesPage * 5)
+        .map((surgery, index) => {
+          const actualIndex = (surgeriesPage - 1) * 5 + index;
+          return (
+            <div key={actualIndex} className="p-4 border border-gray-300 rounded-md space-y-2">
+              <input
+                type="text"
+                placeholder="E.g., Appendectomy"
+                value={surgery.name}
+                onChange={(e) => {
+                  const updated = [...surgeriesPerformed];
+                  updated[actualIndex].name = e.target.value;
+                  setSurgeriesPerformed(updated);
+                }}
+                className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <input
+                type="date"
+                value={surgery.date?.slice(0, 10) || ''}
+                onChange={(e) => {
+                  const updated = [...surgeriesPerformed];
+                  updated[actualIndex].date = e.target.value;
+                  setSurgeriesPerformed(updated);
+                }}
+                className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <textarea
+                placeholder="Notes"
+                value={surgery.notes}
+                onChange={(e) => {
+                  const updated = [...surgeriesPerformed];
+                  updated[actualIndex].notes = e.target.value;
+                  setSurgeriesPerformed(updated);
+                }}
+                className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              ></textarea>
+              <textarea
+                placeholder="Complications"
+                value={surgery.complication}
+                onChange={(e) => {
+                  const updated = [...surgeriesPerformed];
+                  updated[actualIndex].complication = e.target.value;
+                  setSurgeriesPerformed(updated);
+                }}
+                className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              ></textarea>
+              {surgeriesPerformed.length > 1 && (
+                <button
+                  onClick={() => removeSurgeryPerformed(actualIndex)}
+                  className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors w-full text-center"
+                >
+                  Remove
+                </button>
               )}
+            </div>
+          );
+        })}
+    </div>
+
+    {/* Pagination Controls */}
+    <div className="flex justify-between items-center mt-4">
+      <button
+        onClick={() => setSurgeriesPage(p => Math.max(p - 1, 1))}
+        disabled={surgeriesPage === 1}
+        className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+      <span className="text-sm text-gray-600">
+        Page {surgeriesPage} of {Math.ceil(surgeriesPerformed.length / 5)}
+      </span>
+      <button
+        onClick={() => setSurgeriesPage(p => 
+          p * 5 < surgeriesPerformed.length ? p + 1 : p
+        )}
+        disabled={surgeriesPage * 5 >= surgeriesPerformed.length}
+        className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+    </div>
+
+    <div className="mt-4 flex flex-col space-y-2">
+      <button
+        onClick={addSurgeryPerformed}
+        className="flex items-center justify-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors w-full"
+      >
+        <PlusCircle size={20} className="mr-2" />
+        Add More
+      </button>
+      <div className="w-full border-t border-gray-300 mt-4"></div>
+      <div className="flex justify-center mt-4 w-full">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${
+            isSaving
+              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+              : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+          }`}
+        >
+          {isSaving ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-2"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Save
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
               {activeSubSection === "patientlog" && (
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <div className="p-6">
-                    <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
-                      <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                      Patient Records
-                    </h3>
+  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div className="p-6">
+      <h3 className="text-l font-semibold text-gray-800 mb-6 flex items-center gap-2">
+        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        Patient Records
+      </h3>
 
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                              Date
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" colSpan={2}>
-                              Note
-                            </th>
-                            <th className="px-6 py-3"></th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {patientRecords.map((record, index) => (
-                            <tr key={index}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <input
-                                  type="date"
-                                  value={record.date ? record.date.slice(0, 10) : ''}
-                                  onChange={(e) => {
-                                    const newRecords = [...patientRecords];
-                                    newRecords[index].date = e.target.value;
-                                    setPatientRecords(newRecords);
-                                  }}
-                                  className="w-48 text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap" colSpan={2}>
-                                <textarea
-                                  placeholder="Note"
-                                  value={record.note}
-                                  onChange={(e) => {
-                                    const newRecords = [...patientRecords];
-                                    newRecords[index].note = e.target.value;
-                                    setPatientRecords(newRecords);
-                                  }}
-                                  className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                ></textarea>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right">
-                                {patientRecords.length > 1 && (
-                                  <button
-                                    onClick={() => removePatientRecord(index)}
-                                    className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                                  >
-                                    <Trash size={18} />
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" colSpan={2}>
+                Note
+              </th>
+              <th className="px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {patientRecords
+              .slice((recordsPage - 1) * 5, recordsPage * 5)
+              .map((record, index) => {
+                const actualIndex = (recordsPage - 1) * 5 + index;
+                return (
+                  <tr key={actualIndex}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="date"
+                        value={record.date ? record.date.slice(0, 10) : ''}
+                        onChange={(e) => {
+                          const newRecords = [...patientRecords];
+                          newRecords[actualIndex].date = e.target.value;
+                          setPatientRecords(newRecords);
+                        }}
+                        className="w-48 text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap" colSpan={2}>
+                      <textarea
+                        placeholder="Note"
+                        value={record.note}
+                        onChange={(e) => {
+                          const newRecords = [...patientRecords];
+                          newRecords[actualIndex].note = e.target.value;
+                          setPatientRecords(newRecords);
+                        }}
+                        className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      ></textarea>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {patientRecords.length > 1 && (
+                        <button
+                          onClick={() => removePatientRecord(actualIndex)}
+                          className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
 
-                    <div className="mt-4 flex justify-end space-x-2">
-                      <button
-                        onClick={addPatientRecord}
-                        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                      >
-                        <PlusCircle size={20} className="mr-2" />
-                        Add More
-                      </button>
-                    </div>
-                    <div className="w-full border-t border-gray-300 mt-4"></div>
-                    <div className="flex justify-center mt-4 w-full">
-                      <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
-                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
-                          }`}
-                      >
-                        {isSaving ? (
-                          <>
-                            <svg
-                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
-                            </svg>
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="mr-2"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Save
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => setRecordsPage(p => Math.max(p - 1, 1))}
+          disabled={recordsPage === 1}
+          className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-600">
+          Page {recordsPage} of {Math.ceil(patientRecords.length / 5)}
+        </span>
+        <button
+          onClick={() => setRecordsPage(p => 
+            p * 5 < patientRecords.length ? p + 1 : p
+          )}
+          disabled={recordsPage * 5 >= patientRecords.length}
+          className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+
+      <div className="mt-4 flex justify-end space-x-2">
+        <button
+          onClick={addPatientRecord}
+          className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+        >
+          <PlusCircle size={20} className="mr-2" />
+          Add More
+        </button>
+      </div>
+      <div className="w-full border-t border-gray-300 mt-4"></div>
+      <div className="flex justify-center mt-4 w-full">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${
+            isSaving
+              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+              : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+          }`}
+        >
+          {isSaving ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-2"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Save
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
               {activeSubSection === "complicationsrisks" && (
-                <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                  <div className="p-6">
-                    <h3 className="text-l font-semibold text-gray-800 mb-6">Complications and Risks</h3>
+  <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+    <div className="p-6">
+      <h3 className="text-l font-semibold text-gray-800 mb-6">Complications and Risks</h3>
 
-                    <div className="hidden md:block overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                              Date
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Complication/Risk
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Severity
-                            </th>
-                            <th className="px-6 py-3"></th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {complicationRecords.map((record, index) => (
-                            <tr key={index}>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <input
-                                  type="date"
-                                  value={record.date ? new Date(record.date).toISOString().split('T')[0] : ''}
-                                  onChange={(e) => {
-                                    const newRecords = [...complicationRecords];
-                                    newRecords[index].date = e.target.value;
-                                    setComplicationRecords(newRecords);
-                                  }}
-                                  className="w-48 border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <input
-                                  type="text"
-                                  placeholder="Complication or Risk"
-                                  value={record.complication}
-                                  onChange={(e) => {
-                                    const newRecords = [...complicationRecords];
-                                    newRecords[index].complication = e.target.value;
-                                    setComplicationRecords(newRecords);
-                                  }}
-                                  className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <select
-                                  value={record.severity}
-                                  onChange={(e) => {
-                                    const newRecords = [...complicationRecords];
-                                    newRecords[index].severity = e.target.value;
-                                    setComplicationRecords(newRecords);
-                                  }}
-                                  className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                  <option value="high">High</option>
-                                  <option value="normal">Normal</option>
-                                  <option value="low">Low</option>
-                                </select>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-right">
-                                {complicationRecords.length > 1 && (
-                                  <button
-                                    onClick={() => removeComplicationRecord(index)}
-                                    className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
-                                  >
-                                    <Trash size={18} />
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+      <div className="hidden md:block overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                Date
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Complication/Risk
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Severity
+              </th>
+              <th className="px-6 py-3"></th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {complicationRecords
+              .slice((complicationsPage - 1) * 5, complicationsPage * 5)
+              .map((record, index) => {
+                const actualIndex = (complicationsPage - 1) * 5 + index;
+                return (
+                  <tr key={actualIndex}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="date"
+                        value={record.date ? new Date(record.date).toISOString().split('T')[0] : ''}
+                        onChange={(e) => {
+                          const newRecords = [...complicationRecords];
+                          newRecords[actualIndex].date = e.target.value;
+                          setComplicationRecords(newRecords);
+                        }}
+                        className="w-48 border text-gray-900 border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="text"
+                        placeholder="Complication or Risk"
+                        value={record.complication}
+                        onChange={(e) => {
+                          const newRecords = [...complicationRecords];
+                          newRecords[actualIndex].complication = e.target.value;
+                          setComplicationRecords(newRecords);
+                        }}
+                        className="w-full text-gray-900 border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <select
+                        value={record.severity}
+                        onChange={(e) => {
+                          const newRecords = [...complicationRecords];
+                          newRecords[actualIndex].severity = e.target.value;
+                          setComplicationRecords(newRecords);
+                        }}
+                        className="appearance-none w-full border border-gray-300 rounded-md px-4 py-2 pr-10 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="high">High</option>
+                        <option value="normal">Normal</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      {complicationRecords.length > 1 && (
+                        <button
+                          onClick={() => removeComplicationRecord(actualIndex)}
+                          className="p-2 text-red-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors"
+                        >
+                          <Trash size={18} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+          </tbody>
+        </table>
+      </div>
 
-                    <div className="mt-4 flex justify-end space-x-2">
-                      <button
-                        onClick={addComplicationRecord}
-                        className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
-                      >
-                        <PlusCircle size={20} className="mr-2" />
-                        Add More
-                      </button>
-                    </div>
-                    <div className="w-full border-t border-gray-300 mt-4"></div>
-                    <div className="flex justify-center mt-4 w-full">
-                      <button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${isSaving
-                            ? 'bg-green-100 text-green-700 cursor-not-allowed'
-                            : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
-                          }`}
-                      >
-                        {isSaving ? (
-                          <>
-                            <svg
-                              className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                            >
-                              <circle
-                                className="opacity-25"
-                                cx="12"
-                                cy="12"
-                                r="10"
-                                stroke="currentColor"
-                                strokeWidth="4"
-                              />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
-                            </svg>
-                            Saving...
-                          </>
-                        ) : (
-                          <>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="mr-2"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                            Save
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+      {/* Pagination Controls */}
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => setComplicationsPage(p => Math.max(p - 1, 1))}
+          disabled={complicationsPage === 1}
+          className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+        <span className="text-sm text-gray-600">
+          Page {complicationsPage} of {Math.ceil(complicationRecords.length / 5)}
+        </span>
+        <button
+          onClick={() => setComplicationsPage(p => 
+            p * 5 < complicationRecords.length ? p + 1 : p
+          )}
+          disabled={complicationsPage * 5 >= complicationRecords.length}
+          className="px-3 py-1 text-sm text-blue-600 hover:bg-blue-50 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
+      </div>
+
+      <div className="mt-4 flex justify-end space-x-2">
+        <button
+          onClick={addComplicationRecord}
+          className="flex items-center text-blue-500 px-4 py-2 rounded-md hover:bg-blue-200 transition-colors"
+        >
+          <PlusCircle size={20} className="mr-2" />
+          Add More
+        </button>
+      </div>
+      <div className="w-full border-t border-gray-300 mt-4"></div>
+      <div className="flex justify-center mt-4 w-full">
+        <button
+          onClick={handleSave}
+          disabled={isSaving}
+          className={`flex items-center justify-center w-full max-w-md px-4 py-2 rounded-md transition-all duration-300 ${
+            isSaving
+              ? 'bg-green-100 text-green-700 cursor-not-allowed'
+              : 'bg-green-50 text-green-600 hover:bg-green-200 hover:shadow-md'
+          }`}
+        >
+          {isSaving ? (
+            <>
+              <svg
+                className="animate-spin -ml-1 mr-2 h-5 w-5 text-green-600"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              Saving...
+            </>
+          ) : (
+            <>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mr-2"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              Save
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
             </div>
           </div>
         )}
