@@ -1,20 +1,25 @@
 import dbConnect from "../../../utils/dbConnect";
 import Patient from "../../../models/Patient";
 import { NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 
-export async function GET(request: Request, { params }: { params: { patient_id: string } }) {
+export async function GET(
+  request: NextRequest,
+  context: { params: { patient_id: string } }
+) {
+  const { patient_id } = context.params;
+
   try {
     await dbConnect();
-    
-    if (!params.patient_id) {
+
+    if (!patient_id) {
       return NextResponse.json(
         { success: false, error: "Patient ID is required" },
         { status: 400 }
       );
     }
 
-    // Search by patient_id instead of _id
-    const patient = await Patient.findOne({ patient_id: params.patient_id });
+    const patient = await Patient.findOne({ patient_id });
 
     if (!patient) {
       return NextResponse.json(
