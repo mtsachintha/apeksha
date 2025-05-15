@@ -7,6 +7,8 @@ import { useDebounce } from "use-debounce";
 import { Dialog } from '@headlessui/react'; // Install with: npm install @headlessui/react
 
 interface PatientData {
+  createdAt: string;
+  updatedAt: string; 
   _id: string;
   basic_details: {
     title: string;
@@ -403,6 +405,8 @@ const handleAddPatient = async () => {
     }
   }, [activeFilters, isFilterApplied]);
 
+  
+
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -738,14 +742,19 @@ const handleAddPatient = async () => {
                   <div className="flex flex-col flex-grow">
                     <div className="flex flex-col sm:flex-row items-start justify-between mb-2">
                       <span className="text-xs font-semibold px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                        Ward No: <HighlightText
-                          text={patient.basic_details.ward}
+                        Patient ID: <HighlightText
+                          text={patient.patient_id}
                           query={searchType === 'wardNo' ? debouncedSearchQuery : ''}
                         />
                       </span>
                       <div className="flex items-center text-xs text-gray-500 mt-1 sm:mt-0">
-                        <FaClock className="mr-1" /> Last updated: {new Date().toLocaleDateString()}
-                      </div>
+<FaClock className="mr-1" />
+Last updated:{' '}
+{new Date(patient.updatedAt).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+})}                    </div>
                     </div>
 
                     <h4 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
