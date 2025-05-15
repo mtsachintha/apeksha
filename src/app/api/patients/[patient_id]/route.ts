@@ -3,26 +3,13 @@ import Patient from "../../../models/Patient";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-type Params = {
-  params: {
-    patient_id: string;
-  };
-};
-
 export async function GET(
   request: NextRequest,
-  { params }: Params
+  context: { params: { patient_id: string } }
 ) {
+  const { patient_id } = context.params;
+
   try {
-    const { patient_id } = params;
-
-    if (!patient_id) {
-      return NextResponse.json(
-        { success: false, error: "Patient ID is required" },
-        { status: 400 }
-      );
-    }
-
     await dbConnect();
 
     const patient = await Patient.findOne({ patient_id });
@@ -36,7 +23,7 @@ export async function GET(
 
     return NextResponse.json({ success: true, data: patient });
   } catch (error) {
-    console.error("GET /api/patients/[patient_id] error:", error);
+    console.error("Error fetching patient:", error);
     return NextResponse.json(
       { success: false, error: "Server error" },
       { status: 500 }
