@@ -1,16 +1,15 @@
 import dbConnect from "../../../utils/dbConnect";
 import Patient from "../../../models/Patient";
-import { NextResponse } from 'next/server';
-import { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
-export async function GET(
-  request: NextRequest,
-  context: { params: { patient_id: string } }
-) {
-  const { patient_id } = context.params;
-
+export async function GET(request: NextRequest) {
   try {
     await dbConnect();
+
+    const url = new URL(request.url);
+    const pathnameParts = url.pathname.split("/");
+    const patient_id = pathnameParts[pathnameParts.length - 1];
 
     if (!patient_id) {
       return NextResponse.json(
