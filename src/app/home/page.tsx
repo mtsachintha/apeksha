@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { SetStateAction, useState, useEffect } from "react";
-import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes, FaPlus } from "react-icons/fa";
+import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaTimes, FaPlus, FaBars } from "react-icons/fa";
 import { useCallback } from "react";
 import { useDebounce } from "use-debounce";
 import { Dialog } from '@headlessui/react'; // Install with: npm install @headlessui/react
@@ -245,6 +245,9 @@ export default function Home() {
     return options;
   };
 
+      const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+
   const filterOptions = getFilterOptions();
 
   const applyFilters = () => {
@@ -421,41 +424,83 @@ useEffect(() => {
     return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   }
 
-
   return (
     <div className="flex h-screen flex-col bg-gray-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-100 to-blue-300 text-white px-6 py-4 flex justify-between items-center shadow-xl">
-        <img
-          src="/logo_main.png"
-          alt="Logo"
-          className="h-12 cursor-pointer"
-        />
-        <div className="flex items-center space-x-4">
-          {/* Add Record Button */}
-          <button
-            onClick={() => setIsAddDialogOpen(true)}
-            className="flex items-center space-x-2 cursor-pointer bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full transition-colors duration-200"
-          >
-            <FaPlus className="text-sm" />
-            <span>Add a Record</span>
-          </button>
+       <header className="bg-gradient-to-r from-blue-100 to-blue-300 text-white px-4 py-3 flex justify-between items-center shadow-xl">
+      <img
+        src="/logo_main.png"
+        alt="Logo"
+        className="h-10 sm:h-12 cursor-pointer"
+      />
 
-          {/* Existing User Profile */}
-          <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full text-white">
-            <FaUserMd className="text-xl" />
-            {user?.username && <span className="text-sm font-medium">{user?.username}</span>}
-          </div>
+      {/* Desktop Buttons */}
+      <div className="hidden sm:flex items-center space-x-3">
+        <button
+          onClick={() => setIsAddDialogOpen(true)}
+          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-full text-sm"
+        >
+          <FaPlus className="text-sm" />
+          <span>Add a Record</span>
+        </button>
 
-          <button
-            onClick={() => router.push('/')}
-            className="flex items-center space-x-2 cursor-pointer bg-red-400 hover:bg-red-500 px-4 py-2 rounded-full transition-colors duration-200"
-          >
-            <span className="text-sm font-semibold">Menu</span>
-          </button>
+        <button
+          onClick={() => router.push('/')}
+          className="bg-red-400 hover:bg-red-500 px-3 py-1.5 rounded-full text-sm font-semibold"
+        >
+          <FaBars className="inline mr-2" />
+          Menu
+        </button>
 
+        <div className="flex items-center space-x-2 bg-blue-800 hover:bg-blue-600 px-3 py-1.5 rounded-full text-sm">
+          <FaUserMd className="text-lg" />
+          {user?.username && <span>{user?.username}</span>}
         </div>
-      </header>
+
+      </div>
+
+      {/* Mobile Hamburger Menu */}
+      <div className="sm:hidden relative">
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="text-white text-xl"
+        >
+          <FaBars />
+        </button>
+
+        {isMenuOpen && (
+          <div className="absolute right-0 top-12 bg-white text-black w-48 shadow-lg rounded-md z-50 p-2 space-y-2">
+            <button
+              onClick={() => {
+                setIsAddDialogOpen(true);
+                setIsMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+            >
+              <FaPlus className="inline mr-2" />
+              Add a Record
+            </button>
+
+            <button
+              onClick={() => {
+                router.push('/');
+                setIsMenuOpen(false);
+              }}
+              className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+            >
+<FaBars className="inline mr-2" />
+              Menu
+            </button>
+
+            <div className="w-full px-3 py-2 rounded hover:bg-gray-100">
+              <FaUserMd className="inline mr-2" />
+              {user?.username || 'Profile'}
+            </div>
+
+          </div>
+        )}
+      </div>
+    </header>
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">
@@ -618,18 +663,6 @@ useEffect(() => {
                   )}
                 </div>
 
-                {/* Search */}
-                <div className="mt-4 relative group">
-                  <input
-                    type="text"
-                    placeholder={`Search by ${searchType === "name" ? "Name" : "Ward No"}`}
-                    className="w-full p-3 pl-10 bg-gray-50 text-gray-900 rounded-md border border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none transition-all duration-200 group-hover:shadow-md"
-                    value={searchQuery}
-                    onChange={handleSearchQueryChange}
-                  />
-                  <FaSearch className="absolute left-3 top-4 text-gray-500 group-hover:text-blue-500 transition-colors" />
-                </div>
-
                 {/* Search Type Radio */}
                 <div className="flex gap-4 mt-2 text-gray-600 p-2 bg-gray-50 rounded-md">
                   <label className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -682,7 +715,6 @@ useEffect(() => {
                 ))}
 
                 {/* Buttons */}
-                // Apply Filters button
                 <button
                   onClick={() => {
                     setActiveFilters({ ...filters });
@@ -693,7 +725,6 @@ useEffect(() => {
                   Apply Filters
                 </button>
 
-// Reset Filters button
                 <button
                   onClick={() => {
                     const resetFilters = {
@@ -712,9 +743,6 @@ useEffect(() => {
                   }}
                   className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors"
                 >
-                  Reset Filters
-                </button>
-                <button className="w-full bg-gray-300 p-3 text-gray-700 rounded-md mt-3 shadow-lg hover:bg-gray-400 transition-colors">
                   Reset Filters
                 </button>
               </div>
