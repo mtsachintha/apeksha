@@ -5,10 +5,11 @@ import { FaUserMd, FaSearch, FaFilter, FaChevronDown, FaArrowRight, FaClock, FaT
 import { useCallback } from "react";
 import { useDebounce } from "use-debounce";
 import { Dialog } from '@headlessui/react'; // Install with: npm install @headlessui/react
+import { useRouter } from 'next/navigation';
 
 interface PatientData {
   createdAt: string;
-  updatedAt: string; 
+  updatedAt: string;
   _id: string;
   basic_details: {
     title: string;
@@ -74,6 +75,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const router = useRouter();
+
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -273,69 +276,69 @@ export default function Home() {
     setCurrentPage(1);
   };
 
-// In your page.tsx
-const handleAddPatient = async () => {
-  try {
-    // Prepare minimal required data
-    const patientData = {
-      patient_id: newPatient.patient_id,
-      basic_details: {
-        first_name: newPatient.first_name,
-        last_name: newPatient.last_name,
-        gender: newPatient.gender,
-        city: newPatient.city,
-        ward: newPatient.ward
+  // In your page.tsx
+  const handleAddPatient = async () => {
+    try {
+      // Prepare minimal required data
+      const patientData = {
+        patient_id: newPatient.patient_id,
+        basic_details: {
+          first_name: newPatient.first_name,
+          last_name: newPatient.last_name,
+          gender: newPatient.gender,
+          city: newPatient.city,
+          ward: newPatient.ward
+        }
+      };
+
+      console.log("Sending:", JSON.stringify(patientData, null, 2));
+
+      const response = await fetch('/api/patients/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(patientData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Handle validation errors
+        if (result.validationErrors) {
+          const errorMessages = result.validationErrors
+            .map((err: any) => `${err.field}: ${err.message}`)
+            .join('\n');
+          throw new Error(`Validation errors:\n${errorMessages}`);
+        }
+        throw new Error(result.error || 'Failed to add patient');
       }
-    };
 
-    console.log("Sending:", JSON.stringify(patientData, null, 2));
+      // On success
+      alert(`Patient added successfully! ID: ${result.data.patient_id}`);
 
-    const response = await fetch('/api/patients/add', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(patientData),
-    });
+      // Refresh patient list
+      const res = await fetch("/api/patients", { cache: "no-store" });
+      const data = await res.json();
+      setPatients(data);
+      setFilteredPatients(data);
 
-    const result = await response.json();
+      // Reset form
+      setNewPatient({
+        patient_id: '',
+        first_name: '',
+        last_name: '',
+        gender: '',
+        city: '',
+        ward: 'Ward-1'
+      });
+      setIsAddDialogOpen(false);
 
-    if (!response.ok) {
-      // Handle validation errors
-      if (result.validationErrors) {
-        const errorMessages = result.validationErrors
-          .map((err: any) => `${err.field}: ${err.message}`)
-          .join('\n');
-        throw new Error(`Validation errors:\n${errorMessages}`);
-      }
-      throw new Error(result.error || 'Failed to add patient');
+    } catch (error: any) {
+      console.error('Full error:', error);
+      alert(`Error: ${error.message}`);
     }
-
-    // On success
-    alert(`Patient added successfully! ID: ${result.data.patient_id}`);
-    
-    // Refresh patient list
-    const res = await fetch("/api/patients", { cache: "no-store" });
-    const data = await res.json();
-    setPatients(data);
-    setFilteredPatients(data);
-    
-    // Reset form
-    setNewPatient({
-      patient_id: '',
-      first_name: '',
-      last_name: '',
-      gender: '',
-      city: '',
-      ward: 'Ward-1'
-    });
-    setIsAddDialogOpen(false);
-
-  } catch (error: any) {
-    console.error('Full error:', error);
-    alert(`Error: ${error.message}`);
-  }
-};
+  };
 
 
   const [user, setUser] = useState<any>(null);
@@ -358,9 +361,11 @@ const handleAddPatient = async () => {
 
   //Filters End
 
-  useEffect(() => {
-    filterPatients();
-  }, [filterPatients]);
+useEffect(() => {
+  if (isFilterApplied) {
+    applyFilters();
+  }
+}, [patients, activeFilters, debouncedSearchQuery, searchType]);
 
   // Initialize filteredPatients when data loads
   useEffect(() => {
@@ -405,7 +410,7 @@ const handleAddPatient = async () => {
     }
   }, [activeFilters, isFilterApplied]);
 
-  
+
 
 
   if (loading) {
@@ -438,9 +443,17 @@ const handleAddPatient = async () => {
 
           {/* Existing User Profile */}
           <div className="flex items-center space-x-2 cursor-pointer bg-blue-800 hover:bg-blue-600 px-4 py-2 rounded-full text-white">
-      <FaUserMd className="text-xl" />
-      {user?.username && <span className="text-sm font-medium">{user?.username}</span>}
-    </div>
+            <FaUserMd className="text-xl" />
+            {user?.username && <span className="text-sm font-medium">{user?.username}</span>}
+          </div>
+
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center space-x-2 cursor-pointer bg-red-400 hover:bg-red-500 px-4 py-2 rounded-full transition-colors duration-200"
+          >
+            <span className="text-sm font-semibold">Menu</span>
+          </button>
+
         </div>
       </header>
 
@@ -748,13 +761,13 @@ const handleAddPatient = async () => {
                         />
                       </span>
                       <div className="flex items-center text-xs text-gray-500 mt-1 sm:mt-0">
-<FaClock className="mr-1" />
-Last updated:{' '}
-{new Date(patient.updatedAt).toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-})}                    </div>
+                        <FaClock className="mr-1" />
+                        Last updated:{' '}
+                        {new Date(patient.updatedAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}                    </div>
                     </div>
 
                     <h4 className="text-sm font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
