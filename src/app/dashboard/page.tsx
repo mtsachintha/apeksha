@@ -150,13 +150,6 @@ export default function AdminDashboard() {
         <option value="Approved">Approved</option>
         <option value="Rejected">Rejected</option>
       </select>
-      <button 
-        onClick={fetchUsers}
-        className="p-2 text-gray-600 hover:text-gray-800"
-        title="Refresh"
-      >
-        <FaSync />
-      </button>
     </div>
   </div>
 </header>
