@@ -10,11 +10,10 @@ export async function GET(req) {
   try {
     await dbConnect();
     
-    // Verify admin
-    // const adminCheck = await verifyAdmin(req);
-    // if (!adminCheck.isValid) {
-    //   return adminCheck.response;
-    // }
+    const adminCheck = await verifyAdmin(req);
+    if (!adminCheck.isValid) {
+      return adminCheck.response;
+    }
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status') || 'All';
