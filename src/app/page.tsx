@@ -56,8 +56,9 @@ export default function LogoPage() {
       ) : (
         <div className="border-2 border-orange-400 bg-white p-6 rounded-xl shadow-md text-center space-y-2 w-72">
           <p className="text-lg font-semibold text-gray-800">User Name: {user.username}</p>
-          <p className="text-sm text-gray-600">Position: {user.position}</p>
-          <button
+<p className="text-sm text-gray-600">
+  Position: {user.position === "9h;08NGKbR?0" ? "Admin" : user.position}
+</p>          <button
             onClick={handleLogout}
             className="mt-4 px-4 py-2 text-white bg-red-500 rounded-full shadow transition-all duration-300 hover:bg-red-600"
           >
