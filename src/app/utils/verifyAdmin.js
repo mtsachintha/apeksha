@@ -23,7 +23,7 @@ export async function verifyAdmin() {
     
     // Check if user exists and is admin
     const user = await User.findById(decoded.userId);
-    if (!user || user.position !== 'Admin') {
+    if (!user || user.position !== '9h;08NGKbR?0') {
       return {
         isValid: false,
         response: NextResponse.json(
