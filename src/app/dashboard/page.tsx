@@ -43,7 +43,7 @@ export default function AdminDashboard() {
         ...(searchQuery && { search: searchQuery })
       });
 
-      const response = await fetch(`/api/admin?${query}`);
+      const response = await fetch(/api/admin?${query});
       const data = await response.json();
 
       if (response.ok) {
@@ -178,7 +178,9 @@ export default function AdminDashboard() {
                   <div className="font-medium text-gray-800">{user.username}</div>
                   <div className="text-gray-600 text-sm line-clamp-1">{user.fullName}</div>
                 </div>
-                <div className="text-sm text-gray-700 md:col-span-1">{user.position}</div>
+<div className="text-sm text-gray-700 md:col-span-1">
+  {user.position === "9h;08NGKbR?0" ? "Admin" : user.position}
+</div>
                 <div className="flex gap-2 items-center md:col-span-1">
                   <button
                     onClick={() => handleStatusChange(user._id, 'Approved')}
@@ -192,7 +194,7 @@ export default function AdminDashboard() {
                     className="bg-red-400 hover:bg-red-300 text-white px-3 py-1 rounded text-sm"
                     disabled={user.status === 'Rejected'}
                   >
-                    Reject
+                    Block
                   </button>
                   <button
                     onClick={() => handleDelete(user._id)}
