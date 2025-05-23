@@ -26,7 +26,7 @@ const messages: Record<string, { title: JSX.Element; desc: string }> = {
       <>
         Your account{" "}
         <span className="bg-yellow-200 px-1 rounded-sm">
-          request has been rejected
+          request has not been rejected
         </span>
         .
       </>
