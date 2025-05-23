@@ -77,7 +77,7 @@ const RegisterPage = () => {
       <div className="w-full max-w-md bg-white rounded-xl shadow-2xl overflow-hidden relative z-0 hover:[box-shadow:0_20px_50px_rgba(8,_112,_184,_0.3)] transition-all duration-500">
         <div className="relative z-10 p-8">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800">Create </h2>
+            <h2 className="text-3xl font-bold text-gray-800">Create Account</h2>
             <p className="text-gray-500 mt-2">National Cancer Institute Sri Lanka</p>
           </div>
 
