@@ -43,7 +43,7 @@ export default function AdminDashboard() {
         ...(searchQuery && { search: searchQuery })
       });
 
-      const response = await fetch(`/api/admin?${query}`);
+      const response = await fetch(/api/admin?${query});
       const data = await response.json();
 
       if (response.ok) {
