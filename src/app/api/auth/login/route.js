@@ -40,6 +40,22 @@ export async function POST(req) {
       );
     }
 
+if (user.status === 'Pending') {
+  return NextResponse.json(
+    { success: false, reason: 'pending' },
+    { status: 403 }
+  );
+}
+
+if (user.status === 'Rejected') {
+  return NextResponse.json(
+    { success: false, reason: 'rejected' },
+    { status: 403 }
+  );
+}
+
+
+
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
@@ -59,7 +75,7 @@ export async function POST(req) {
     const token = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+  { expiresIn: '365d' } // valid for 1 year
     );
 
     // Create HTTP-only cookie
@@ -78,7 +94,7 @@ export async function POST(req) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 86400, // 1 day
+maxAge: 60 * 60 * 24 * 365, // 365 days in seconds
       path: '/',
     });
 

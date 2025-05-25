@@ -44,15 +44,23 @@ const LoginPage = () => {
       const data = await res.json();
       
       if (!res.ok) {
-        // Handle different error statuses specifically
-        if (res.status === 401) {
-          throw new Error(data.message || "Invalid username or password");
-        } else if (res.status === 400) {
-          throw new Error(data.message || "Validation error");
-        } else {
-          throw new Error(data.message || "Login failed. Please try again.");
-        }
-      }
+  if (data?.reason === 'pending') {
+    router.push('/message?reason=pending');
+    return;
+  } else if (data?.reason === 'rejected') {
+    router.push('/message?reason=rejected');
+    return;
+  }
+
+  if (res.status === 401) {
+    throw new Error(data.message || "Invalid username or password");
+  } else if (res.status === 400) {
+    throw new Error(data.message || "Validation error");
+  } else {
+    throw new Error(data.message || "Login failed. Please try again.");
+  }
+}
+
 
       // Redirect to home page after successful login
       router.push("/home");
