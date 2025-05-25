@@ -30,7 +30,7 @@ export async function POST(req) {
 
     // Find user (case insensitive)
     const user = await User.findOne({ 
-      username: { $regex: new RegExp(^${username.trim()}$, 'i') }
+username: { $regex: new RegExp(`^${username.trim()}$`, 'i') }
     }).select('+password');
 
     if (!user) {
