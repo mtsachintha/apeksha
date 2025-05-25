@@ -44,15 +44,23 @@ const LoginPage = () => {
       const data = await res.json();
       
       if (!res.ok) {
-        // Handle different error statuses specifically
-        if (res.status === 401) {
-          throw new Error(data.message || "Invalid username or password");
-        } else if (res.status === 400) {
-          throw new Error(data.message || "Validation error");
-        } else {
-          throw new Error(data.message || "Login failed. Please try again.");
-        }
-      }
+  if (data?.reason === 'pending') {
+    router.push('/message?reason=pending');
+    return;
+  } else if (data?.reason === 'rejected') {
+    router.push('/message?reason=rejected');
+    return;
+  }
+
+  if (res.status === 401) {
+    throw new Error(data.message || "Invalid username or password");
+  } else if (res.status === 400) {
+    throw new Error(data.message || "Validation error");
+  } else {
+    throw new Error(data.message || "Login failed. Please try again.");
+  }
+}
+
 
       // Redirect to home page after successful login
       router.push("/home");
@@ -109,8 +117,8 @@ const LoginPage = () => {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Enter your username"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:bg-gray-50"
+                placeholder="Username"
+                className="w-full text-gray-900 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:bg-gray-50"
                 required
                 minLength={3}
                 maxLength={30}
@@ -124,8 +132,8 @@ const LoginPage = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter your password"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:bg-gray-50"
+                placeholder="Password"
+                className="w-full text-gray-900 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all hover:bg-gray-50"
                 required
                 minLength={8}
               />
@@ -134,7 +142,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className={`w-full ${isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group`}
+              className={w-full ${isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group}
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">

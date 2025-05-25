@@ -811,33 +811,39 @@ const DetailsPage = () => {
 
       {/* Patient Profile */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto p-6 flex items-center space-x-6">
-          <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border-2 border-blue-200">
-            <img src={getAvatarImage()} alt="Avatar" className="w-full h-full object-cover" />
-          </div>
+  <div className="max-w-7xl mx-auto p-4 sm:p-6 flex flex-col sm:flex-row items-center sm:space-x-6 space-y-4 sm:space-y-0">
+    
+    <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border-2 border-blue-200">
+      <img src={getAvatarImage()} alt="Avatar" className="w-full h-full object-cover" />
+    </div>
 
-          <div>
-            <h2 className="text-2xl font-bold text-gray-800"> {patient.basic_details.first_name} {" "}  {patient.basic_details.last_name} </h2>
-            <div className="flex flex-wrap items-center gap-2 mt-2 text-gray-600">
-              <span className="flex items-center">
-                <FaCalendarAlt className="mr-2 text-blue-500" />
-                {new Date(patient.basic_details.birthday).toLocaleDateString('en-AU')} ({getAge(patient.basic_details.birthday)} y.o) | {patient.basic_details.gender}
-              </span>
+    <div className="text-center sm:text-left">
+      <h2 className="text-lg sm:text-2xl font-bold text-gray-800">
+        {patient.basic_details.first_name}{" "}{patient.basic_details.last_name}
+      </h2>
 
-              <span className="flex items-center">
-                <FaMapMarkerAlt className="mr-2 text-blue-500" />
-                {patient.basic_details.address}, {patient.basic_details.city}
-              </span>
+      <div className="flex flex-col sm:flex-wrap sm:flex-row sm:items-center gap-1 sm:gap-4 mt-2 text-gray-600 text-sm sm:text-base">
+        
+        <span className="flex items-center justify-center sm:justify-start">
+          <FaCalendarAlt className="mr-2 text-blue-500" />
+          {new Date(patient.basic_details.birthday).toLocaleDateString('en-AU')} ({getAge(patient.basic_details.birthday)} y.o) | {patient.basic_details.gender}
+        </span>
 
-              <span className="flex items-center">
-                <FaPhone className="mr-2 text-blue-500" />
-                {patient.basic_details.phone} (Mobile)
-              </span>
+        <span className="flex items-center justify-center sm:justify-start">
+          <FaMapMarkerAlt className="mr-2 text-blue-500" />
+          {patient.basic_details.address}, {patient.basic_details.city}
+        </span>
 
-            </div>
-          </div>
-        </div>
+        <span className="flex items-center justify-center sm:justify-start">
+          <FaPhone className="mr-2 text-blue-500" />
+          {patient.basic_details.phone} (Mobile)
+        </span>
+        
       </div>
+    </div>
+  </div>
+</div>
+
 
       {/* Navigation Tabs */}
       <div className="bg-white border-b">
@@ -1901,7 +1907,6 @@ const DetailsPage = () => {
                               )
                             }
                             className="w-full border text-gray-900 border-gray-300 rounded-md px-4 py-2 bg-gray-50"
-                            readOnly
                           />
                         </div>
 

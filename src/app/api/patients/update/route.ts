@@ -13,11 +13,12 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Patient ID is required' }, { status: 400 });
     }
 
-    const updated = await Patient.findOneAndReplace(
-      { patient_id },
-      body,
-      { returnDocument: 'after', upsert: false }
-    );
+    const updated = await Patient.findOneAndUpdate(
+  { patient_id },
+  { $set: rest },
+  { new: true }
+);
+
 
     if (!updated) {
       return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
