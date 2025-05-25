@@ -1,10 +1,11 @@
+'use client';
+
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { JSX } from 'react';
 
 function MessageContent() {
-  'use client';
 
   const searchParams = useSearchParams();
   const reason = searchParams.get('reason');
