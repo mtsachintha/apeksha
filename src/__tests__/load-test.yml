@@ -1,0 +1,9 @@
+config:
+  target: "http://localhost:3001"
+  phases:
+    - duration: 60
+      arrivalRate: 50
+scenarios:
+  - flow:
+      - get:
+          url: "/api/patients"
