@@ -396,17 +396,6 @@ useEffect(() => {
   }, []);
 
   useEffect(() => {
-    // Load filters from localStorage
-    const savedFilters = localStorage.getItem('patientFilters');
-    if (savedFilters) {
-      const parsed = JSON.parse(savedFilters);
-      setFilters(parsed);
-      setActiveFilters(parsed);
-      setIsFilterApplied(true);
-    }
-  }, []);
-
-  useEffect(() => {
     // Save filters to localStorage
     if (isFilterApplied) {
       localStorage.setItem('patientFilters', JSON.stringify(activeFilters));
@@ -808,10 +797,10 @@ useEffect(() => {
 
                     <div className="flex-grow space-y-2 mb-3">
                       <p className="text-xs text-gray-700">
-                        Cancer Type: <span className="font-semibold">{patient.primary_diagnosis.cancer_type}</span>
+                        Cancer Type: <span className="font-semibold">{patient.primary_diagnosis.cancer_type}  {patient.primary_diagnosis.stage}</span>
                       </p>
                       <p className="text-xs text-gray-700">
-                        Stage: <span className="font-semibold">{patient.primary_diagnosis.stage}</span>
+                        Ward: <span className="font-semibold">{patient.basic_details.ward}</span>
                       </p>
                       <p className="text-xs text-gray-700">
                         Complications: <span className="font-semibold">
@@ -953,7 +942,7 @@ useEffect(() => {
                   onChange={(e) => setNewPatient({ ...newPatient, ward: e.target.value })}
                 >
                   {Array.from({ length: 20 }, (_, i) => (
-                    <option key={i} value={`Ward-${i + 1}`}>Ward {i + 1}</option>
+                    <option key={i} value={`${i + 1}`}>Ward {i + 1}</option>
                   ))}
                 </select>
               </div>
