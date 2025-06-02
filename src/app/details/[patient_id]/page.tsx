@@ -1,5 +1,3 @@
-"use client";
-
 import Patient from "../../models/Patient";
 
 import { useParams } from 'next/navigation';
@@ -8,7 +6,11 @@ import { PlusCircle, Trash, Save, Check, BriefcaseMedical, SquareActivity } from
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaUserMd, FaChevronDown, FaArrowRight, FaCalendarAlt, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+  title: 'Patients Dashboard',
+};
 
 interface Patient {
   _id: string;
