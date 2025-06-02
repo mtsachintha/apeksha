@@ -1,35 +1,28 @@
-// app/api/patients/delete/[id]/route.ts
-import { NextResponse } from 'next/server';
-import connectDB from '../../../../utils/dbConnect';
-import Patient from '../../../../models/Patient';
+// app/api/patients/delete/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import Patient from "../../../../models/Patient";
+import dbConnect from "../../../../utils/dbConnect";
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(req: NextRequest) {
+  await dbConnect();
+
   try {
-    await connectDB();
+    const body = await req.json();
+    const { patient_id } = body;
 
-    const { id } = params;
-
-    const deletedPatient = await Patient.findOneAndDelete({ patient_id: id });
-
-    if (!deletedPatient) {
-      return NextResponse.json(
-        { success: false, error: 'Patient not found' },
-        { status: 404 }
-      );
+    if (!patient_id) {
+      return NextResponse.json({ error: 'Patient ID is required' }, { status: 400 });
     }
 
-    return NextResponse.json(
-      { success: true, data: deletedPatient },
-      { status: 200 }
-    );
-  } catch (error: any) {
-    console.error('Error deleting patient:', error);
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: 500 }
-    );
+    const deleted = await Patient.findOneAndDelete({ patient_id });
+
+    if (!deleted) {
+      return NextResponse.json({ error: 'Patient not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Patient deleted successfully', data: deleted }, { status: 200 });
+  } catch (err) {
+    console.error('Error deleting patient:', err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
