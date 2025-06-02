@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const RegisterPage = () => {
+
+  useEffect(() => {
+      document.title = 'Apeksha Registration';
+    }, []);
+
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     fullName: "",

@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 const LoginPage = () => {
+
+  useEffect(() => {
+    document.title = 'Apeksha Login';
+  }, []);
+
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +23,7 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Client-side validation
     if (!formData.username.trim() || !formData.password.trim()) {
       setError("Please fill in all fields");
@@ -31,7 +36,7 @@ const LoginPage = () => {
     try {
       const res = await fetch("/api/auth/login", {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
         },
         credentials: 'include', // Important for cookies
@@ -42,33 +47,33 @@ const LoginPage = () => {
       });
 
       const data = await res.json();
-      
-      if (!res.ok) {
-  if (data?.reason === 'pending') {
-    router.push('/message?reason=pending');
-    return;
-  } else if (data?.reason === 'rejected') {
-    router.push('/message?reason=rejected');
-    return;
-  }
 
-  if (res.status === 401) {
-    throw new Error(data.message || "Invalid username or password");
-  } else if (res.status === 400) {
-    throw new Error(data.message || "Validation error");
-  } else {
-    throw new Error(data.message || "Login failed. Please try again.");
-  }
-}
+      if (!res.ok) {
+        if (data?.reason === 'pending') {
+          router.push('/message?reason=pending');
+          return;
+        } else if (data?.reason === 'rejected') {
+          router.push('/message?reason=rejected');
+          return;
+        }
+
+        if (res.status === 401) {
+          throw new Error(data.message || "Invalid username or password");
+        } else if (res.status === 400) {
+          throw new Error(data.message || "Validation error");
+        } else {
+          throw new Error(data.message || "Login failed. Please try again.");
+        }
+      }
 
 
       // Redirect to home page after successful login
       router.push("/home");
-      
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Login failed";
       setError(errorMessage);
-      
+
       // Log detailed error in development
       if (process.env.NODE_ENV === 'development') {
         console.error("Login error details:", err);
@@ -76,20 +81,20 @@ const LoginPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Grid background pattern */}
       <div className="absolute inset-0 opacity-10 [background-image:linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] [background-size:24px_24px]"></div>
-      
+
       {/* Logo */}
       <div className="absolute top-6 left-6 sm:top-8 sm:left-8 z-10">
-        <Image 
-          src="/logo_main.png" 
-          alt="Logo" 
-          width={200} 
-          height={50} 
+        <Image
+          src="/logo_main.png"
+          alt="Logo"
+          width={200}
+          height={50}
           className="hover:scale-105 transition-transform duration-300"
           priority
         />
@@ -140,29 +145,29 @@ const LoginPage = () => {
             </div>
 
             <button
-  type="submit"
-  disabled={isLoading}
-  className={`w-full ${isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group`}
->
-  {isLoading ? (
-    <span className="flex items-center justify-center">
-      <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      Processing...
-    </span>
-  ) : (
-    <span className="relative z-10">Sign In</span>
-  )}
-</button>
+              type="submit"
+              disabled={isLoading}
+              className={`w-full ${isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white font-medium py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 relative overflow-hidden group`}
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Processing...
+                </span>
+              ) : (
+                <span className="relative z-10">Sign In</span>
+              )}
+            </button>
 
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{" "}
-              <Link 
+              <Link
                 href="/register"
                 className="text-blue-600 hover:text-blue-800 font-medium transition-colors"
               >

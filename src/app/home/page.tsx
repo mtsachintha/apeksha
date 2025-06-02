@@ -71,6 +71,11 @@ interface PatientData {
 }
 
 export default function Home() {
+
+  useEffect(() => {
+    document.title = 'Home';
+  }, []);
+
   const [patients, setPatients] = useState<PatientData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -245,7 +250,7 @@ export default function Home() {
     return options;
   };
 
-      const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 
   const filterOptions = getFilterOptions();
@@ -364,11 +369,11 @@ export default function Home() {
 
   //Filters End
 
-useEffect(() => {
-  if (isFilterApplied) {
-    applyFilters();
-  }
-}, [patients, activeFilters, debouncedSearchQuery, searchType]);
+  useEffect(() => {
+    if (isFilterApplied) {
+      applyFilters();
+    }
+  }, [patients, activeFilters, debouncedSearchQuery, searchType]);
 
   // Initialize filteredPatients when data loads
   useEffect(() => {
@@ -416,80 +421,80 @@ useEffect(() => {
   return (
     <div className="flex h-screen flex-col bg-gray-50">
       {/* Header */}
-       <header className="bg-gradient-to-r from-blue-100 to-blue-300 text-white px-4 py-3 flex justify-between items-center shadow-xl">
-      <img
-        src="/logo_main.png"
-        alt="Logo"
-        className="h-10 sm:h-12 cursor-pointer"
-      />
+      <header className="bg-gradient-to-r from-blue-100 to-blue-300 text-white px-4 py-3 flex justify-between items-center shadow-xl">
+        <img
+          src="/logo_main.png"
+          alt="Logo"
+          className="h-10 sm:h-12 cursor-pointer"
+        />
 
-      {/* Desktop Buttons */}
-      <div className="hidden sm:flex items-center space-x-3">
-        <button
-          onClick={() => setIsAddDialogOpen(true)}
-          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-full text-sm"
-        >
-          <FaPlus className="text-sm" />
-          <span>Add a Record</span>
-        </button>
+        {/* Desktop Buttons */}
+        <div className="hidden sm:flex items-center space-x-3">
+          <button
+            onClick={() => setIsAddDialogOpen(true)}
+            className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-full text-sm"
+          >
+            <FaPlus className="text-sm" />
+            <span>Add a Record</span>
+          </button>
 
-        <button
-          onClick={() => router.push('/')}
-          className="bg-red-400 hover:bg-red-500 px-3 py-1.5 rounded-full text-sm font-semibold"
-        >
-          <FaBars className="inline mr-2" />
-          Menu
-        </button>
+          <button
+            onClick={() => router.push('/')}
+            className="bg-red-400 hover:bg-red-500 px-3 py-1.5 rounded-full text-sm font-semibold"
+          >
+            <FaBars className="inline mr-2" />
+            Menu
+          </button>
 
-        <div className="flex items-center space-x-2 bg-blue-800 hover:bg-blue-600 px-3 py-1.5 rounded-full text-sm">
-          <FaUserMd className="text-lg" />
-          {user?.username && <span>{user?.username}</span>}
+          <div className="flex items-center space-x-2 bg-blue-800 hover:bg-blue-600 px-3 py-1.5 rounded-full text-sm">
+            <FaUserMd className="text-lg" />
+            {user?.username && <span>{user?.username}</span>}
+          </div>
+
         </div>
 
-      </div>
+        {/* Mobile Hamburger Menu */}
+        <div className="sm:hidden relative">
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="text-white text-xl"
+          >
+            <FaBars />
+          </button>
 
-      {/* Mobile Hamburger Menu */}
-      <div className="sm:hidden relative">
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="text-white text-xl"
-        >
-          <FaBars />
-        </button>
+          {isMenuOpen && (
+            <div className="absolute right-0 top-12 bg-white text-black w-48 shadow-lg rounded-md z-50 p-2 space-y-2">
+              <button
+                onClick={() => {
+                  setIsAddDialogOpen(true);
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+              >
+                <FaPlus className="inline mr-2" />
+                Add a Record
+              </button>
 
-        {isMenuOpen && (
-          <div className="absolute right-0 top-12 bg-white text-black w-48 shadow-lg rounded-md z-50 p-2 space-y-2">
-            <button
-              onClick={() => {
-                setIsAddDialogOpen(true);
-                setIsMenuOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
-            >
-              <FaPlus className="inline mr-2" />
-              Add a Record
-            </button>
+              <button
+                onClick={() => {
+                  router.push('/');
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
+              >
+                <FaBars className="inline mr-2" />
+                Menu
+              </button>
 
-            <button
-              onClick={() => {
-                router.push('/');
-                setIsMenuOpen(false);
-              }}
-              className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded"
-            >
-<FaBars className="inline mr-2" />
-              Menu
-            </button>
+              <div className="w-full px-3 py-2 rounded hover:bg-gray-100">
+                <FaUserMd className="inline mr-2" />
+                {user?.username || 'Profile'}
+              </div>
 
-            <div className="w-full px-3 py-2 rounded hover:bg-gray-100">
-              <FaUserMd className="inline mr-2" />
-              {user?.username || 'Profile'}
             </div>
-
-          </div>
-        )}
-      </div>
-    </header>
+          )}
+        </div>
+      </header>
 
       {/* Main Content Area */}
       <div className="flex flex-1 overflow-hidden">

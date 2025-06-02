@@ -75,6 +75,10 @@ const handlePrint = () => {
 
 const DetailsPage = () => {
 
+  useEffect(() => {
+    document.title = 'Details';
+  }, []);
+
   const params = useParams();
   const [patient, setPatient] = useState<Patient>({
     _id: '',
