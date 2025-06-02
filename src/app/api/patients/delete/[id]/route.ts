@@ -4,13 +4,13 @@ import connectDB from '../../../../utils/dbConnect';
 import Patient from '../../../../models/Patient';
 
 export async function DELETE(
-  _: Request,
-  context: { params: { id: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
   try {
     await connectDB();
 
-    const { id } = context.params;
+    const { id } = params;
 
     const deletedPatient = await Patient.findOneAndDelete({ patient_id: id });
 
