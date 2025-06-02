@@ -3,17 +3,14 @@ import { NextResponse } from 'next/server';
 import connectDB from '../../../../utils/dbConnect';
 import Patient from '../../../../models/Patient';
 
-type Params = {
-  params: {
-    id: string;
-  };
-};
-
-export async function DELETE(_: Request, { params }: Params) {
+export async function DELETE(
+  _: Request,
+  context: { params: { id: string } }
+) {
   try {
     await connectDB();
 
-    const { id } = params;
+    const { id } = context.params;
 
     const deletedPatient = await Patient.findOneAndDelete({ patient_id: id });
 
