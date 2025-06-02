@@ -680,6 +680,29 @@ const DetailsPage = () => {
     }
   };
 
+  const handleDelete = async (patientId: string) => {
+  const confirmDelete = window.confirm("Are you sure you want to delete this patient?");
+  if (!confirmDelete) return;
+
+  try {
+    const res = await fetch(`/api/patients/delete/${patientId}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Patient deleted successfully!");
+      // Optionally refresh the list or redirect
+    } else {
+      alert(`Error: ${data.error}`);
+    }
+  } catch (err) {
+    console.error("Delete failed:", err);
+    alert("Something went wrong.");
+  }
+};
+
   async function replacePatient(patient: any) {
     try {
       const response = await fetch('/api/patients/update', {
@@ -971,10 +994,16 @@ const DetailsPage = () => {
 
             </div>
 
-            {/* Export Button */}
-            <div className="mt-4 text-right">
-              <button className="bg-blue-500 text-white px-4 py-2 rounded">Export</button>
-            </div>
+            {/* Export and Delete Buttons */}
+<div className="mt-4 flex justify-end space-x-2">
+<button
+  className="bg-red-500 text-white px-4 py-2 rounded"
+  onClick={() => handleDelete(patient.patient_id)}
+>
+  Delete Patient
+</button>  <button className="bg-blue-500 text-white px-4 py-2 rounded">Export</button>
+</div>
+
           </div>
         )}
 
