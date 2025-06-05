@@ -36,7 +36,6 @@ const PatientSchema = new mongoose.Schema({
     ward: {
       type: String,
       required: [true, 'Ward number is required'],
-      match: [/^Ward-\d+$/, 'Please use Ward-<number> format']
     },
     phone: {
       type: String,

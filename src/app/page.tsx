@@ -98,7 +98,7 @@ export default function LogoPage() {
 </button>
 
       <button
-        onClick={() => router.push('/home')}
+        onClick={() => router.push('/contact')}
         className="px-6 py-3 text-white bg-blue-800 rounded-full shadow-md transition-all duration-300 hover:bg-blue-900 hover:scale-105"
       >
         Contact Us
